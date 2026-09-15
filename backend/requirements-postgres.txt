@@ -1,0 +1,6 @@
+# Postgres deployment. Not needed for the SQLite path.
+-r requirements.txt
+psycopg2-binary>=2.9
+pgvector>=0.2.5
+redis>=5.0
+rq>=1.16

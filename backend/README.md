@@ -19,11 +19,13 @@ document is fake — it asks `modules/`, collects their checks, and combines the
 ## Done when
 
 - [ ] `docker compose up` gives a running API, worker, Postgres and Redis
-- [ ] `POST /api/cases` returns a `case_id` immediately
-- [ ] Checks stream over SSE as each one finishes
-- [ ] The verdict engine is covered by table-driven tests
-- [ ] A forensic signal can never produce CLEAR on its own
-- [ ] The audit chain detects a tampered past row
+      *(compose file written; **never actually run** — Docker is not installed on
+      the machine this was built on. Verify before relying on it.)*
+- [x] `POST /api/cases` returns a `case_id` immediately
+- [x] Checks stream over SSE as each one finishes
+- [x] The verdict engine is covered by table-driven tests
+- [x] A forensic signal can never produce CLEAR on its own
+- [x] The audit chain detects a tampered past row
 
 ## Blocks everyone
 

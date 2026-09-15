@@ -1,2 +1,96 @@
-# TODO(M1 · Rohith): postgres 16 + pgvector, redis, backend api, worker, frontend.
-# Nothing here yet — do not add services without updating .env.example and docs/SETUP.md.
+# The full deployment: Postgres with pgvector, Redis, the API and a worker.
+#
+#   docker compose up --build
+#
+# This is not the only way to run the system, and for a teammate without Docker
+# it is not the fastest. With no DATABASE_URL and no REDIS_URL the same code runs
+# against SQLite with screening in-process — see scripts/setup_dev.sh. What this
+# file adds is pgvector, so the prior-encounter face search is an index lookup
+# rather than a scan, and real workers so screening leaves the request thread.
+
+name: svaram
+
+services:
+  db:
+    # pgvector/pgvector ships the extension already built. Installing it into a
+    # stock postgres image at runtime is a build step waiting to fail at a demo.
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: svaram
+      POSTGRES_PASSWORD: svaram
+      POSTGRES_DB: svaram
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U svaram -d svaram"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg2://svaram:svaram@db:5432/svaram
+      REDIS_URL: redis://redis:6379/0
+      UPLOAD_DIR: /app/var/uploads
+      MODEL_DIR: /app/var/models
+      ENVIRONMENT: docker
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - uploads:/app/var/uploads
+      - models:/app/var/models
+    ports:
+      - "8000:8000"
+
+  worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: ["python", "-m", "backend.app.workers.worker"]
+    environment:
+      DATABASE_URL: postgresql+psycopg2://svaram:svaram@db:5432/svaram
+      REDIS_URL: redis://redis:6379/0
+      UPLOAD_DIR: /app/var/uploads
+      MODEL_DIR: /app/var/models
+    depends_on:
+      api:
+        condition: service_started
+    volumes:
+      # The worker reads the images the API wrote, so they share the volume.
+      - uploads:/app/var/uploads
+      - models:/app/var/models
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      VITE_API_TARGET: http://api:8000
+    depends_on:
+      - api
+    ports:
+      - "5173:80"
+
+volumes:
+  pgdata:
+  uploads:
+  models:

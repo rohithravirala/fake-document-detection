@@ -48,6 +48,13 @@ id_rsa*
 !**/certs/*.cer
 !**/certs/*.crt
 
+#  But never the throwaway key `scripts/seed_db.py --demo` generates. It sits in
+#  the same directory as the real certificate and would be indistinguishable
+#  from it in a diff — a demo signer committed next to the UIDAI one is how a
+#  deployment ends up verifying cards against the wrong key.
+modules/aadhaar/certs/demo-signer.pem
+**/certs/*test*.pem
+
 
 # -----------------------------------------------------------------------------
 #  3. ML MODEL WEIGHTS  —  fetched by scripts/download_models.py, never committed
@@ -137,6 +144,11 @@ test-results/
 # -----------------------------------------------------------------------------
 #  6. DATABASE, QUEUE & RUNTIME STATE
 # -----------------------------------------------------------------------------
+#  Everything the running system writes lives under var/: the SQLite database,
+#  uploaded document images, and downloaded model weights. None of it belongs in
+#  the repository, and the uploads in particular must never reach it.
+/var/
+
 *.db
 *.sqlite
 *.sqlite3

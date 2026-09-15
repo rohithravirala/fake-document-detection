@@ -8,11 +8,11 @@ generic and how a new document type becomes a configuration change.
 
 ## To define
 
-- [ ] `DocumentInput` — image path, doc type, preprocessing hints
-- [ ] `ExtractedField` — name, value, confidence, bounding box
-- [ ] `Check` — check id, type, result (PASS / FAIL / INCONCLUSIVE), severity, evidence, citation
-- [ ] `Evidence` — region, crop reference, human-readable note
-- [ ] `Verifier` — the interface every module implements
-- [ ] Severity levels and what each one is allowed to do to a verdict
+- [x] `DocumentInput` — image path, doc type, preprocessing hints
+- [x] `ExtractedField` — name, value, confidence, bounding box
+- [x] `Check` — check id, type, result (PASS / FAIL / INCONCLUSIVE), severity, evidence, citation
+- [x] `Evidence` — region, crop reference, human-readable note
+- [x] `Verifier` — the interface every module implements
+- [x] Severity levels and what each one is allowed to do to a verdict
 
 Nothing here imports OpenCV, FastAPI or a model. Types and interfaces only.

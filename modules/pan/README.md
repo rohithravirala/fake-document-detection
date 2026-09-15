@@ -8,10 +8,10 @@ arithmetic, not by a model.
 
 ## Scope
 
-- [ ] Format: `^[A-Z]{5}[0-9]{4}[A-Z]$`
-- [ ] 4th character → holder category (P, C, H, F, A, T, B, G, J, L)
-- [ ] 5th character must equal the first letter of the printed surname
-- [ ] Each failure returns a `Check` with a citation, never a score
+- [x] Format: `^[A-Z]{5}[0-9]{4}[A-Z]$`
+- [x] 4th character → holder category (P, C, H, F, A, T, B, G, J, L)
+- [x] 5th character must equal the first letter of the printed surname
+- [x] Each failure returns a `Check` with a citation, never a score
 
 ## Done when
 

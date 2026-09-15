@@ -6,6 +6,25 @@
 
 > One verdict. One reason. Evidence the officer can point at.
 
+```bash
+git clone <repo> && cd svaram-sih26188
+./scripts/setup_dev.sh
+
+./.venv/bin/python -m uvicorn backend.app.main:app --reload   # API   :8000
+cd frontend && npm run dev                                    # App   :5173
+```
+
+No Docker needed. Full instructions in [`docs/SETUP.md`](docs/SETUP.md); the
+containerised path is `docker compose up --build`.
+
+| | |
+|---|---|
+| Backend tests | 149 passing |
+| Frontend tests | 12 passing |
+| Evaluation set | 17/17 verdicts, 17/17 checks, **0 false clears** |
+| Screening time | 0.8 ms field-only · ~0.9 s with OCR on an image |
+| Works offline | Aadhaar signature, PAN structure, MRZ check digits — all of it |
+
 ---
 
 ## Contents
@@ -21,8 +40,9 @@
 9. [Who owns what](#9-who-owns-what)
 10. [Build stages](#10-build-stages)
 11. [Working agreement](#11-working-agreement)
-12. [Deliberate non-goals](#12-deliberate-non-goals)
-13. [Data handling rule](#13-data-handling-rule)
+12. [Known gaps](#12-known-gaps)
+13. [Deliberate non-goals](#13-deliberate-non-goals)
+14. [Data handling rule](#14-data-handling-rule)
 
 ---
 
@@ -214,56 +234,61 @@ team's tech-stack document. Setup instructions go in [`docs/SETUP.md`](docs/SETU
 
 ```
 .
-├── .github/workflows/          CI                              → M1
-│
-├── backend/                    API, DB, queue, verdict engine   → M1
-│   ├── app/api/                FastAPI routes + SSE
-│   ├── app/models/             SQLAlchemy models
-│   ├── app/schemas/            Pydantic schemas
-│   ├── app/services/           Orchestration
-│   ├── app/verdict/            CLEAR / REJECT / REFER rules
-│   ├── app/workers/            RQ jobs
+├── backend/
+│   ├── app/api/                FastAPI routes + SSE stream
+│   ├── app/models/             SQLAlchemy: cases, documents, checks,
+│   │                           face_encounters, audit_log, profiles
+│   ├── app/schemas/            Pydantic — the API contract, executable
+│   ├── app/services/           Orchestration, audit chain, profiles, storage
+│   ├── app/verdict/engine.py   CLEAR / REJECT / REFER, and the four invariants
+│   ├── app/workers/            RQ jobs, with an in-process fallback
 │   ├── alembic/                Migrations
-│   └── tests/
+│   └── tests/                  149 tests
 │
-├── modules/                    Detection & verification
-│   ├── common/                 Shared contract — BLOCKS EVERYONE → M1
-│   ├── ocr/                    Extraction pipeline             → M2
-│   ├── aadhaar/                QR decode + UIDAI signature     → M3
-│   └── pan/                    Structural validator            → M5
+├── modules/                    Detection and verification
+│   ├── common/                 The shared contract. Zero dependencies
+│   ├── ocr/                    Quality gate, preprocessing, engines, extraction
+│   ├── aadhaar/                Secure QR parsing, UIDAI signature, Verhoeff
+│   ├── pan/                    Structure, category, surname initial
+│   ├── passport/               ICAO check digits, MRZ, cross-field comparison
+│   ├── face/                   Local embeddings, three-band comparison
+│   └── forensics/              ELA, noise residual, copy-move, metadata
 │
-├── frontend/                   Officer interface
-│   └── src/
-│       ├── pages/              Upload, Processing              → M4
-│       │                       Verdict, CaseList               → M5
-│       ├── components/upload/  → M4      components/verdict/   → M5
-│       ├── components/layout/  → M4      components/common/    → M4
-│       ├── api/, mocks/        → M4
-│       └── lib/, styles/       → M4
+├── frontend/src/
+│   ├── pages/                  Upload, Processing, Verdict, CaseList,
+│   │                           Audit, Profiles
+│   ├── components/             upload/ · verdict/ · layout/ · common/
+│   ├── api/                    Typed client, TanStack Query hooks, SSE
+│   └── mocks/                  Field-value cases that need no models
 │
-├── evaluation/                 Samples, accuracy, demo         → M6
+├── evaluation/                 17-sample set with ground truth, and the scorer
 ├── docs/                       Contract, architecture, setup, deployment, demo
-├── scripts/                    download_models, seed_db, setup_dev
-├── docker-compose.yml          → M1 only
-├── .env.example                → M1 only
-└── README.md
+├── scripts/                    setup_dev.sh · seed_db.py · download_models.py
+├── docker-compose.yml          Postgres + pgvector, Redis, API, worker, web
+└── var/                        Runtime only — database, uploads, models
 ```
 
-Each folder has its own `README.md` with scope and a definition of done. **Read yours
-before starting.**
+Three module folders were added to the original plan: `passport/`, `face/` and
+`forensics/`. Stages 3, 4 and 5 need them, and folding passport MRZ logic into
+`aadhaar/` would have made both worse.
 
----
+Each folder has its own `README.md` with scope and a definition of done.
 
 ## 9. Who owns what
 
-| Member | Folder | Task | Difficulty |
-|---|---|---|---|
-| **M1 · Rohith** | `backend/` + `modules/common/` + docker files | Backend core, DB, queue, verdict engine | Medium |
-| **M2** | `modules/ocr/` | OCR extraction pipeline | Medium |
-| **M3** | `modules/aadhaar/` | Aadhaar QR decode + signature verification | **HARD** |
-| **M4** | `frontend/` — upload side | Upload + Processing screens | Easy |
-| **M5** | `modules/pan/` → then `frontend/` verdict side | PAN validator, then Verdict + CaseList screens | Easy |
-| **M6** | `evaluation/` | Test samples, accuracy report, demo script | Medium |
+| Member | Folder | Task | Difficulty | Status |
+|---|---|---|---|---|
+| **M1 · Rohith** | `backend/` + `modules/common/` + docker | Core, DB, queue, verdict engine | Medium | scaffolded end to end |
+| **M2** | `modules/ocr/` | Extraction pipeline | Medium | working; Paddle engine unwired |
+| **M3** | `modules/aadhaar/` | Secure QR + UIDAI signature | **HARD** | working against synthetic keys |
+| **M4** | `frontend/` — upload side | Upload + Processing | Easy | working |
+| **M5** | `modules/pan/` → `frontend/` verdict side | PAN, then Verdict + CaseList | Easy | working |
+| **M6** | `evaluation/` | Samples, accuracy, demo script | Medium | 17 samples, harness in CI |
+
+A first working version of every module is in place, so nobody starts from an
+empty folder. **What is there is a floor, not a ceiling** — each owner's real
+work is in their folder's README, and the honest gaps are listed in
+[§12](#12-known-gaps).
 
 ### Dependency order — read this before assigning
 
@@ -289,18 +314,17 @@ before starting.**
 
 ## 10. Build stages
 
-Each stage is a working product, not a layer. Nothing moves to the next stage until
-the current one demos end to end.
+Each stage is a working product, not a layer. All five are wired end to end; the
+column on the right is what is genuinely finished versus what still needs a real
+document in front of it.
 
-| Stage | Delivers | Introduces |
+| Stage | Delivers | State |
 |---|---|---|
-| **1 · PAN** | Upload → validate → verdict → case history | React, TS, Vite, Tailwind, FastAPI, Postgres, SQLAlchemy, Docker |
-| **2 · Aadhaar** | QR decode, UIDAI signature, printed-text comparison | OpenCV, PaddleOCR, pyzbar, `cryptography`, pyOpenSSL, Redis, RQ, SSE |
-| **3 · Passport** | MRZ extraction and check digits | Tesseract OCR-B, custom MRZ parser, ICAO check digits |
-| **4 · Face + audit** | Face match, multiple-identity detection, hash chain | InsightFace, ONNX Runtime, `pgvector`, hashlib, TanStack Table |
-| **5 · Forensics** | Tampering signals for documents with no source of truth | PyWavelets, scikit-image, ExifRead, pikepdf |
-
----
+| **1 · PAN** | Upload → validate → verdict → history | Complete. 37 tests over every category letter and malformed shape |
+| **2 · Aadhaar** | QR decode, UIDAI signature, printed-text comparison | Crypto path complete and tested. **Needs the real UIDAI certificate and real Secure QR samples** |
+| **3 · Passport** | MRZ extraction, ICAO check digits | Complete against published ICAO specimens. Chip reading is out of scope |
+| **4 · Face + audit** | Local embeddings, multiple-identity search, hash chain | Audit chain complete and tested. Face code complete, **untested against real faces** — InsightFace is not installed here |
+| **5 · Forensics** | Tampering signals where no source of truth exists | Runs, tuned to stay silent. **Thresholds need calibration against real samples** |
 
 ## 11. Working agreement
 
@@ -325,7 +349,23 @@ evidence, citation. If it cannot produce a citation, it is not a check.
 
 ---
 
-## 12. Deliberate non-goals
+## 12. Known gaps
+
+Written down rather than left to be discovered. Each of these is where the next
+real work is, and each is something an evaluator could find on their own.
+
+| Gap | What it means |
+|---|---|
+| **No real Aadhaar QR has been verified** | The cryptographic path is proven end to end against a synthetic signing key in exactly the real byte layout. Swapping in the real UIDAI certificate changes the key and nothing else — but that swap has not happened, and until it does no claim should be made about a real card |
+| **Forensic thresholds are uncalibrated** | Tuned so that clean captures produce nothing, verified over synthetic images. Sensitivity against real forgeries is unmeasured. They are set to stay quiet, which costs recall |
+| **ELA and noise detect nothing on our splice fixtures** | Both stay silent on a re-saved composite. Honest limitation of the techniques, not a bug — copy-move does fire. Real samples are needed to tune this or to conclude the techniques do not earn their place |
+| **Face module never run against real faces** | The code path, the three-band logic and the resolution floor are complete. InsightFace is not installed in this environment, so the module reports `unavailable` and cases route to REFER |
+| **MRZ check digits do not stop a competent forger** | They are modulo 10 and recomputable. Documented at length in `modules/passport/checkdigit.py`, with a test that demonstrates it. The defence is the printed-page comparison and, properly, the signed chip |
+| **PaddleOCR is wired but not installed** | The engine abstraction supports it. Only Tesseract is active here, which is weaker on Indian scripts |
+| **No authentication** | `OFFICER_ID` is hard-coded. The columns exist on every case and audit record |
+| **Hash chain has no external anchor** | It detects edits. An administrator with full table access could recompute the whole chain. Publishing the head hash somewhere append-only closes that |
+
+## 13. Deliberate non-goals
 
 Each of these is a decision, not an omission. Be ready to defend them — an evaluator
 will ask.
@@ -342,7 +382,7 @@ will ask.
 
 ---
 
-## 13. Data handling rule
+## 14. Data handling rule
 
 > **No real identity document ever enters this repository.**
 >

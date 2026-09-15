@@ -1,0 +1,34 @@
+# Optional model-backed modules, roughly 1 GB installed.
+#
+# The system runs without every line of this file. Each module reports itself
+# UNAVAILABLE when its dependency is absent, which routes cases to REFER — it
+# never turns a missing model into a rejection.
+#
+# Install what a deployment actually needs, not the whole file by reflex.
+-r requirements.txt
+
+# OCR. Tesseract also needs the system binary:
+#   macOS  brew install tesseract
+#   Debian apt-get install tesseract-ocr
+pytesseract>=0.3.10
+
+# Stronger multi-script OCR, including Indian scripts. Large.
+# paddleocr>=2.7
+# paddlepaddle>=2.6
+
+# Face detection and 512-dimensional embeddings, run locally.
+# No cloud face API is ever called: biometric data must not leave the
+# deployment boundary.
+# insightface>=0.7.3
+# onnxruntime>=1.17
+
+# Forensics extras. The module degrades to simpler filters without them.
+# PyWavelets>=1.6
+# scikit-image>=0.22
+# pikepdf>=8.0
+
+# Denser QR decoding than OpenCV manages on an Aadhaar Secure QR.
+# Needs the zbar system library:
+#   macOS  brew install zbar
+#   Debian apt-get install libzbar0
+# pyzbar>=0.1.9
