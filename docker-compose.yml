@@ -1,0 +1,2 @@
+# TODO(M1 · Rohith): postgres 16 + pgvector, redis, backend api, worker, frontend.
+# Nothing here yet — do not add services without updating .env.example and docs/SETUP.md.

@@ -1,0 +1,201 @@
+# =============================================================================
+#  SVARAM · SIH26188 — repository ignore rules
+#  One file for the whole monorepo: backend, modules, frontend, evaluation.
+#  Read the IDENTITY DOCUMENTS section before adding anything to evaluation/.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+#  1. IDENTITY DOCUMENTS & BIOMETRICS  —  the rule that actually matters
+# -----------------------------------------------------------------------------
+#  No real Aadhaar, PAN, passport or visa image ever enters this repository.
+#  Not in a branch, not "temporarily", not renamed. Git history is permanent and
+#  the repo is public. Synthetic or published specimen data only.
+#  Real samples live outside the repo, on one machine, and stay there.
+
+uploads/
+evaluation/samples/real/
+evaluation/samples/private/
+**/real_samples/
+**/private_samples/
+*.aadhaar.*
+*.pan.*
+*.passport.*
+
+# Face embeddings and any exported biometric vectors
+*.embedding
+*.embeddings
+embeddings/
+
+
+# -----------------------------------------------------------------------------
+#  2. SECRETS & KEYS
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+*.key
+*.pem
+*.p12
+*.pfx
+id_rsa*
+
+#  Exception: the UIDAI public certificate is public by design and MUST be
+#  committed — offline Aadhaar signature verification depends on it shipping
+#  with the repo. Keep every public cert under a certs/ folder.
+!**/certs/*.pem
+!**/certs/*.cer
+!**/certs/*.crt
+
+
+# -----------------------------------------------------------------------------
+#  3. ML MODEL WEIGHTS  —  fetched by scripts/download_models.py, never committed
+# -----------------------------------------------------------------------------
+#  Root-anchored on purpose: a bare "models/" would also ignore
+#  backend/app/models/, which is source code.
+
+/models/
+/backend/models/
+/modules/models/
+.paddleocr/
+.insightface/
+.cache/huggingface/
+
+*.onnx
+*.pth
+*.pt
+*.pb
+*.tflite
+*.h5
+*.safetensors
+*.caffemodel
+*.params
+
+
+# -----------------------------------------------------------------------------
+#  4. PYTHON  —  backend/ and modules/
+# -----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+.venv/
+venv/
+env/
+ENV/
+
+*.egg-info/
+.eggs/
+build/
+develop-eggs/
+sdist/
+wheels/
+pip-wheel-metadata/
+
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+
+.ipynb_checkpoints/
+
+
+# -----------------------------------------------------------------------------
+#  5. NODE / FRONTEND
+# -----------------------------------------------------------------------------
+node_modules/
+dist/
+dist-ssr/
+build/
+.vite/
+*.local
+
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+coverage/
+.vitest/
+playwright-report/
+test-results/
+
+.npm/
+.pnpm-store/
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+
+
+# -----------------------------------------------------------------------------
+#  6. DATABASE, QUEUE & RUNTIME STATE
+# -----------------------------------------------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+pgdata/
+postgres-data/
+redis-data/
+dump.rdb
+
+
+# -----------------------------------------------------------------------------
+#  7. DOCKER & LOCAL OVERRIDES
+# -----------------------------------------------------------------------------
+docker-compose.override.yml
+.docker/
+
+
+# -----------------------------------------------------------------------------
+#  8. LOGS & TEMPORARY OUTPUT
+# -----------------------------------------------------------------------------
+*.log
+logs/
+tmp/
+temp/
+.scratch/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+#  OCR / forensics intermediate images written during a run
+debug_output/
+*.debug.png
+*.debug.jpg
+
+
+# -----------------------------------------------------------------------------
+#  9. OS & EDITOR
+# -----------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+
+
+# -----------------------------------------------------------------------------
+#  10. KEEP EMPTY FOLDERS
+# -----------------------------------------------------------------------------
+#  .gitkeep holds the skeleton together until each owner fills their folder.
+#  Delete a .gitkeep only when that folder has real files in it.
+
+!.gitkeep
