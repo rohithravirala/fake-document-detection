@@ -1,33 +1,8 @@
 /**
- * Marks drawn rather than sourced.
- *
- * The State Emblem is a protected symbol and this is a prototype, so the
- * sidebar carries an Ashoka Chakra motif instead — recognisably of the right
- * world without claiming to be the official emblem.
+ * Marks drawn rather than sourced — no sourced logo files, no external assets.
  */
 
-export function Chakra({ className = 'h-7 w-7' }: { className?: string }) {
-  const spokes = Array.from({ length: 24 }, (_, i) => (i * 360) / 24)
-  return (
-    <svg viewBox="0 0 48 48" className={className} aria-hidden="true">
-      <circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" strokeWidth="2.5" />
-      <circle cx="24" cy="24" r="3.4" fill="currentColor" />
-      {spokes.map((angle) => (
-        <line
-          key={angle}
-          x1="24"
-          y1="24"
-          x2={24 + 19 * Math.cos((angle * Math.PI) / 180)}
-          y2={24 + 19 * Math.sin((angle * Math.PI) / 180)}
-          stroke="currentColor"
-          strokeWidth="1.1"
-        />
-      ))}
-    </svg>
-  )
-}
-
-export function PratyayMark({ className = 'h-9 w-9' }: { className?: string }) {
+export function SvaramMark({ className = 'h-9 w-9' }: { className?: string }) {
   return (
     <svg viewBox="0 0 48 48" className={className} aria-hidden="true">
       <path

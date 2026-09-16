@@ -1,9 +1,5 @@
 import { useHealth } from '@/api/hooks'
-<<<<<<< Updated upstream
 import { DigitalIndiaMark, SvaramMark } from './Brand'
-=======
-import { Chakra, DigitalIndiaMark, SvaramMark } from './Brand'
->>>>>>> Stashed changes
 import { IconAlert } from '@/components/common/Icons'
 
 /**
@@ -78,21 +74,10 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
           </div>
         </div>
 
-<<<<<<< Updated upstream
         <div className="hidden items-center border-l border-line pl-4 lg:flex">
           <p className="text-[12.5px] leading-tight text-ink-muted">
             AI-Powered Document Verification
           </p>
-=======
-        {/* Issuing authority */}
-        <div className="hidden items-center gap-2.5 border-l border-line pl-4 sm:flex">
-          <Chakra className="h-8 w-8 shrink-0 text-navy-800" />
-          <div className="leading-tight">
-            <p className="deva text-[11.5px] font-semibold text-ink">गृह मंत्रालय</p>
-            <p className="text-[10.5px] font-semibold tracking-tight text-ink">MINISTRY OF HOME AFFAIRS</p>
-            <p className="text-[9px] tracking-wide text-ink-muted">GOVERNMENT OF INDIA</p>
-          </div>
->>>>>>> Stashed changes
         </div>
 
         <div className="ml-auto flex items-center gap-4">
