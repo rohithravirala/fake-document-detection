@@ -46,6 +46,24 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           </NavLink>
         ))}
       </nav>
+<<<<<<< Updated upstream
+=======
+
+      <div className="border-t border-white/10 px-5 py-5">
+        {/* A chakra rather than a map: at this size a silhouette of India is
+            indistinguishable from a blob, and a badly drawn national outline
+            reads worse than no outline. */}
+        <div className="flex items-center gap-3">
+          <Chakra className="h-9 w-9 shrink-0 text-white/80" />
+          <p className="text-[13px] font-semibold leading-tight">
+            Secure Borders
+            <br />
+            Safer India
+          </p>
+        </div>
+        <div className="tri-rule mt-4 h-[3px] w-14 rounded-full" />
+      </div>
+>>>>>>> Stashed changes
     </div>
   )
 }
