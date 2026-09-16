@@ -1,15 +1,19 @@
-export function PratyayMark({ className = 'h-9 w-9' }: { className?: string }) {
+/**
+ * Marks drawn rather than sourced — no sourced logo files, no external assets.
+ */
+
+export function SvaramMark({ className = 'h-9 w-9' }: { className?: string }) {
   return (
     <svg viewBox="0 0 48 48" className={className} aria-hidden="true">
       <path
         d="M24 3 8 9v14c0 9.6 6.6 17.4 16 20 9.4-2.6 16-10.4 16-20V9z"
-        fill="url(#pg)"
+        fill="url(#sg)"
         stroke="#0B1F4B"
         strokeWidth="1.6"
       />
       <path d="m16.5 24.5 5 5 10.5-11" fill="none" stroke="#fff" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
       <defs>
-        <linearGradient id="pg" x1="8" y1="3" x2="40" y2="43" gradientUnits="userSpaceOnUse">
+        <linearGradient id="sg" x1="8" y1="3" x2="40" y2="43" gradientUnits="userSpaceOnUse">
           <stop stopColor="#245098" />
           <stop offset="1" stopColor="#0B1F4B" />
         </linearGradient>

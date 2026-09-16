@@ -1,5 +1,5 @@
 import { useHealth } from '@/api/hooks'
-import { DigitalIndiaMark, PratyayMark } from './Brand'
+import { DigitalIndiaMark, SvaramMark } from './Brand'
 import { IconAlert } from '@/components/common/Icons'
 
 /**
@@ -22,15 +22,21 @@ function Capabilities() {
   if (missing.length) gaps.push(`unavailable: ${missing.join(', ')}`)
 
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-line bg-brand-50/60 px-4 py-1.5 text-[11.5px] md:px-6">
-      <span className="font-mono text-ink-muted">{data.storage}</span>
-      <span className="font-mono text-ink-muted">{data.execution}</span>
+    <div className="flex min-h-[29px] flex-wrap items-center gap-x-2 gap-y-1 border-b border-line bg-canvas px-4 py-1 text-[11px] leading-[15px] md:px-6">
+      <span className="rounded border border-line bg-white px-1.5 py-px font-mono text-ink-muted">
+        {data.storage}
+      </span>
+      <span className="rounded border border-line bg-white px-1.5 py-px font-mono text-ink-muted">
+        {data.execution}
+      </span>
       {data.offline_capable ? (
-        <span className="font-medium text-clear">offline capable</span>
+        <span className="rounded border border-clear-border bg-clear-bg px-1.5 py-px font-medium text-clear-dark">
+          offline capable
+        </span>
       ) : null}
       {gaps.length ? (
         <span className="flex items-center gap-1.5 font-medium text-refer">
-          <IconAlert className="h-3.5 w-3.5" />
+          <IconAlert className="h-3.5 w-3.5 shrink-0" />
           {gaps.join(' · ')}
         </span>
       ) : null}
@@ -38,12 +44,17 @@ function Capabilities() {
   )
 }
 
+/*
+ * The masthead is pinned to 57px and the strip below it to 29px, because
+ * AppShell offsets the sticky sidebar by their sum (86px). Change a height
+ * here and that offset has to move with it.
+ */
 export function TopBar({ onMenu }: { onMenu: () => void }) {
   const { data } = useHealth()
 
   return (
     <header className="sticky top-0 z-30 bg-white">
-      <div className="flex items-stretch gap-3 border-b border-line px-4 py-2.5 md:px-6">
+      <div className="flex h-[57px] items-center gap-4 border-b border-line px-4 md:px-6">
         <button
           onClick={onMenu}
           className="-ml-1 rounded p-2 text-ink-muted hover:bg-canvas lg:hidden"
@@ -56,30 +67,21 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
 
         {/* Product */}
         <div className="flex items-center gap-3">
-          <PratyayMark className="h-9 w-9 shrink-0" />
+          <SvaramMark className="h-9 w-9 shrink-0" />
           <div className="leading-tight">
-            <p className="text-[19px] font-bold tracking-[0.14em] text-navy-800">PRATYAY</p>
-            <p className="text-[10px] font-medium tracking-wide text-ink-muted">
-              Verify Today. Safer Tomorrow.
-            </p>
+            <p className="text-[19px] font-bold tracking-[0.18em] text-navy-800">SVARAM</p>
+            <p className="text-[10.5px] tracking-wide text-ink-muted">Verify Today. Safer Tomorrow.</p>
           </div>
         </div>
 
-        <div className="hidden items-center border-l border-line pl-4 xl:flex">
-          <div className="leading-tight">
-            <p className="text-[13px] font-semibold text-ink">
-              AI-Powered Document Verification for a Secure India
-            </p>
-            <p className="text-[11px] text-ink-muted">A Smart India Hackathon Initiative</p>
-          </div>
+        <div className="hidden items-center border-l border-line pl-4 lg:flex">
+          <p className="text-[12.5px] leading-tight text-ink-muted">
+            AI-Powered Document Verification
+          </p>
         </div>
 
         <div className="ml-auto flex items-center gap-4">
-          <DigitalIndiaMark className="hidden h-7 text-navy-800 md:block" />
-          <div className="hidden text-right leading-tight lg:block">
-            <p className="text-[12.5px] font-bold text-navy-800">#SmartIndiaHackathon</p>
-            <p className="text-[10.5px] text-ink-muted">Innovate | Solve | Build for Bharat</p>
-          </div>
+          <DigitalIndiaMark className="hidden h-7 text-navy-800 xl:block" />
           <div className="flex items-center gap-2.5 rounded-lg border border-line px-3 py-1.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-[12px] font-bold text-brand-800">
               {(data?.app ?? 'O').slice(0, 1)}
