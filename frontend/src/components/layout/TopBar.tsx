@@ -1,5 +1,5 @@
 import { useHealth } from '@/api/hooks'
-import { Chakra, DigitalIndiaMark, PratyayMark } from './Brand'
+import { DigitalIndiaMark, PratyayMark } from './Brand'
 import { IconAlert } from '@/components/common/Icons'
 
 /**
@@ -54,18 +54,8 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
           </svg>
         </button>
 
-        {/* Ministry */}
-        <div className="flex items-center gap-2.5 pr-3">
-          <Chakra className="h-9 w-9 shrink-0 text-navy-800" />
-          <div className="hidden leading-tight sm:block">
-            <p className="deva text-[12px] font-semibold text-ink">गृह मंत्रालय</p>
-            <p className="text-[11px] font-bold tracking-tight text-ink">MINISTRY OF HOME AFFAIRS</p>
-            <p className="text-[9.5px] tracking-wide text-ink-muted">GOVERNMENT OF INDIA</p>
-          </div>
-        </div>
-
         {/* Product */}
-        <div className="flex items-center gap-3 border-l border-line pl-4">
+        <div className="flex items-center gap-3">
           <PratyayMark className="h-9 w-9 shrink-0" />
           <div className="leading-tight">
             <p className="text-[19px] font-bold tracking-[0.14em] text-navy-800">PRATYAY</p>

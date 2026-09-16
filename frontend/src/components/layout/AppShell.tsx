@@ -39,8 +39,7 @@ export function AppShell() {
       <footer className="border-t border-line bg-white px-4 py-3.5 md:px-6">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px] text-ink-muted">
           <span className="font-semibold text-ink">PRATYAY</span>
-          <span>Ministry of Home Affairs, Government of India</span>
-          <span className="hidden md:inline">Authentic Citizens · Secure Borders · A Stronger Nation</span>
+          <span className="hidden md:inline">Authentic Citizens · Secure Verification · A Stronger Nation</span>
           <span className="ml-auto flex items-center gap-3">
             <span className="tri-rule h-[3px] w-14 rounded-full" />
             Built for Bharat · Smart India Hackathon 2026

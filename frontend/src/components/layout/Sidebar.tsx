@@ -1,6 +1,5 @@
 import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
-import { Chakra } from './Brand'
 import {
   IconChart,
   IconDashboard,
@@ -47,22 +46,6 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           </NavLink>
         ))}
       </nav>
-
-      <div className="border-t border-white/10 px-5 py-6 text-center">
-        {/* A chakra rather than a map: at this size a silhouette of India is
-            indistinguishable from a blob, and a badly drawn national outline
-            reads worse than no outline. */}
-        <Chakra className="mx-auto h-14 w-14 text-white/85" />
-        <p className="mt-3 text-[15px] font-semibold leading-tight">
-          Secure Borders
-          <br />
-          Safer India
-        </p>
-        <div className="tri-rule mx-auto my-3 h-[3px] w-16 rounded-full" />
-        <p className="text-[11.5px] italic leading-snug text-white/65">
-          “Technology for a Stronger, Safer Bharat.”
-        </p>
-      </div>
     </div>
   )
 }

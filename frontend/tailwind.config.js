@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        /* Government of India institutional blue, as the mockups set it. */
+        /* Core navy used throughout the interface. */
         navy: {
           900: '#0B1F4B',
           800: '#102A5C',
