@@ -31,15 +31,15 @@ export function StatTile({
     refer: 'bg-refer-bg text-refer',
   }
   return (
-    <div className="card flex items-center gap-3.5 px-4 py-3.5">
+    <div className="card flex items-center gap-3.5 px-4 py-3.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
       {icon ? (
-        <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg', tones[tone])}>
+        <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-transform duration-200 group-hover:scale-105', tones[tone])}>
           {icon}
         </div>
       ) : null}
       <div className="min-w-0">
-        <p className="tnum text-[26px] font-bold leading-none text-ink">{value}</p>
-        <p className="mt-1 text-[12.5px] text-ink-muted">{label}</p>
+        <p className="tnum text-[26px] font-bold leading-none text-ink tracking-tight">{value}</p>
+        <p className="mt-1 text-[12.5px] font-medium text-ink-muted">{label}</p>
         {delta != null ? (
           <p
             className={cn(
@@ -54,5 +54,6 @@ export function StatTile({
         ) : null}
       </div>
     </div>
+
   )
 }

@@ -5,6 +5,7 @@ import { StatTile } from '@/components/common/StatTile'
 import { Button, Card, EmptyState, Row, Spinner } from '@/components/common/Primitives'
 import { ResultPill, VerdictPill } from '@/components/common/Badge'
 import { IconCheck, IconClock, IconCross, IconDoc, IconSearch } from '@/components/common/Icons'
+import { showToast } from '@/components/common/Toast'
 import { DOC_TYPE_LABELS, type DocType } from '@/api/types'
 import { formatDuration, formatTimestamp } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -39,13 +40,40 @@ export function CaseHistoryPage() {
     })
   }, [cases, docType, query])
 
+  const exportCSV = () => {
+    if (!rows.length) return
+    const headers = ['Case ID', 'Created At', 'Doc Types', 'Verdict', 'Reason', 'Duration (ms)']
+    const lines = rows.map((r) => [
+      r.id,
+      r.created_at,
+      r.doc_types.join(';'),
+      r.verdict ?? '',
+      `"${(r.reason ?? '').replace(/"/g, '""')}"`,
+      r.duration_ms,
+    ])
+    const csvContent = [headers.join(','), ...lines.map((l) => l.join(','))].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `svaram_cases_export_${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    showToast(`Exported ${rows.length} cases to CSV`, 'success')
+  }
+
   const all = stats?.all_time
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-[22px] font-bold text-ink">Case History</h1>
-        <p className="text-[13px] text-ink-muted">Every screening, with the reason it was decided.</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h1 className="text-[22px] font-bold text-ink">Case History</h1>
+          <p className="text-[13px] text-ink-muted">Every screening, with the reason it was decided.</p>
+        </div>
+        <Button size="sm" variant="secondary" onClick={exportCSV} disabled={!rows.length}>
+          📥 Export CSV ({rows.length})
+        </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -140,8 +168,8 @@ export function CaseHistoryPage() {
                       key={item.id}
                       onClick={() => setSelected(item.id)}
                       className={cn(
-                        'cursor-pointer hover:bg-brand-50/50',
-                        selected === item.id && 'bg-brand-50',
+                        'cursor-pointer transition-colors hover:bg-brand-50/50',
+                        selected === item.id && 'bg-brand-50 font-medium',
                       )}
                     >
                       <td className="whitespace-nowrap px-3 py-2.5 font-mono text-[11.5px] text-ink-muted">
@@ -172,7 +200,7 @@ export function CaseHistoryPage() {
                           onClick={(e) => e.stopPropagation()}
                           className="whitespace-nowrap font-medium text-brand-700 hover:underline"
                         >
-                          Open
+                          Open →
                         </Link>
                       </td>
                     </tr>
@@ -181,9 +209,12 @@ export function CaseHistoryPage() {
               </table>
             </div>
           )}
-          <p className="border-t border-line px-3 py-2 text-[12px] text-ink-faint">
-            Showing {rows.length} of {cases?.length ?? 0} cases
-          </p>
+          <div className="flex items-center justify-between border-t border-line px-3 py-2 text-[12px] text-ink-faint">
+            <span>Showing {rows.length} of {cases?.length ?? 0} cases</span>
+            {rows.length > 0 ? (
+              <span>Click any row for side panel details</span>
+            ) : null}
+          </div>
         </div>
 
         {selected ? (
@@ -199,9 +230,20 @@ export function CaseHistoryPage() {
               <Spinner />
             ) : (
               <>
-                <div className="flex items-center gap-2">
-                  {detail.verdict ? <VerdictPill verdict={detail.verdict} /> : null}
-                  <span className="font-mono text-[11.5px] text-ink-faint">{detail.id.slice(0, 16)}…</span>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    {detail.verdict ? <VerdictPill verdict={detail.verdict} /> : null}
+                    <span className="font-mono text-[11.5px] text-ink-faint">{detail.id.slice(0, 12)}…</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(detail.id)
+                      showToast('Case ID copied to clipboard', 'success')
+                    }}
+                    className="text-[11px] text-brand-600 hover:underline font-mono"
+                  >
+                    Copy ID
+                  </button>
                 </div>
                 <dl className="mt-3">
                   <Row label="Screened" value={formatTimestamp(detail.created_at)} />
@@ -216,7 +258,7 @@ export function CaseHistoryPage() {
                 <p className="label mt-4">Verification timeline</p>
                 <ol className="mt-2 space-y-0">
                   {(detail.documents[0]?.checks ?? []).map((check) => (
-                    <li key={check.id} className="flex items-start gap-2.5 border-l border-line py-1.5 pl-3">
+                    <li key={check.id} className="flex items-start gap-2.5 border-l border-line py-1.5 pl-3 hover:bg-canvas transition-colors">
                       <ResultPill result={check.result} />
                       <span className="min-w-0 flex-1 font-mono text-[11px] text-ink-muted">
                         {check.check_id}
@@ -227,7 +269,7 @@ export function CaseHistoryPage() {
 
                 <div
                   className={cn(
-                    'mt-4 rounded-md border px-3 py-2.5 text-[12.5px] leading-relaxed',
+                    'mt-4 rounded-md border px-3 py-2.5 text-[12.5px] leading-relaxed font-medium shadow-xs',
                     detail.verdict === 'clear' && 'border-clear-border bg-clear-bg text-ink-soft',
                     detail.verdict === 'reject' && 'border-reject-border bg-reject-bg text-ink-soft',
                     detail.verdict === 'refer' && 'border-refer-border bg-refer-bg text-ink-soft',
@@ -250,3 +292,4 @@ export function CaseHistoryPage() {
     </div>
   )
 }
+

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
+import { ToastContainer } from '@/components/common/Toast'
 import { cn } from '@/lib/utils'
 
 export function AppShell() {
@@ -36,6 +37,8 @@ export function AppShell() {
         </main>
       </div>
 
+      <ToastContainer />
+
       <footer className="border-t border-line bg-white px-4 py-3.5 md:px-6">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px] text-ink-muted">
           <span className="font-semibold tracking-[0.12em] text-ink">SVARAM</span>
@@ -49,3 +52,4 @@ export function AppShell() {
     </div>
   )
 }
+

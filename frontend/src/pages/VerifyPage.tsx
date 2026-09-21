@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react'
 import { DropZone } from '@/components/upload/DropZone'
 import { CameraCapture } from '@/components/upload/CameraCapture'
 import { DocumentPreview } from '@/components/upload/DocumentPreview'
 import { Button, Card, EmptyState, Note, Row, Spinner } from '@/components/common/Primitives'
 import { ResultPill, VerdictPill } from '@/components/common/Badge'
 import { IconCamera, IconCheck, IconInfo, IconQr, IconUpload } from '@/components/common/Icons'
+import { showToast } from '@/components/common/Toast'
 import { useCase, useScreeningStream, useSubmit, useSubmitManual } from '@/api/hooks'
 import { DOC_TYPES, DOC_TYPE_LABELS, type Check, type DocType, type StreamEvent } from '@/api/types'
 import { fieldLabel, formatDuration } from '@/lib/format'
@@ -22,16 +23,16 @@ const STEPS = [
 
 function Stepper({ current }: { current: number }) {
   return (
-    <ol className="card flex flex-wrap items-center gap-y-3 px-5 py-4">
+    <ol className="card flex flex-wrap items-center gap-y-3 px-5 py-4 shadow-sm">
       {STEPS.map((step, index) => {
         const state = current > step.n ? 'done' : current === step.n ? 'active' : 'todo'
         return (
           <li key={step.n} className="flex min-w-[140px] flex-1 items-center gap-3">
             <span
               className={cn(
-                'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold',
-                state === 'done' && 'bg-clear text-white',
-                state === 'active' && 'bg-brand-600 text-white',
+                'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold transition-all duration-300',
+                state === 'done' && 'bg-clear text-white shadow-sm',
+                state === 'active' && 'bg-brand-600 text-white shadow-md ring-4 ring-brand-100 animate-pulse',
                 state === 'todo' && 'bg-canvas text-ink-faint ring-1 ring-line-strong',
               )}
             >
@@ -51,7 +52,7 @@ function Stepper({ current }: { current: number }) {
             {index < STEPS.length - 1 ? (
               <span
                 className={cn(
-                  'ml-auto hidden h-[2px] min-w-[24px] flex-1 rounded lg:block',
+                  'ml-auto hidden h-[2px] min-w-[24px] flex-1 rounded lg:block transition-colors duration-300',
                   current > step.n ? 'bg-clear' : 'bg-line',
                 )}
               />
@@ -94,6 +95,7 @@ export function VerifyPage() {
       return URL.createObjectURL(next)
     })
     setDocType(guessDocType(next.name) as DocType)
+    showToast(`Document "${next.name}" loaded`, 'info')
   }, [])
 
   const streamed = useMemo(() => checksFrom(events), [events])
@@ -107,11 +109,13 @@ export function VerifyPage() {
   const onSubmit = async () => {
     if (!file) return
     const created = await submit.mutateAsync({ files: [file], docTypes: [docType] })
+    showToast('Verification initiated', 'info')
     navigate(`/verify/${created.case_id}`)
   }
 
   const runDemo = async (index: number) => {
     const created = await submitManual.mutateAsync(DEMO_CASES[index].documents)
+    showToast(`Loaded sample: ${DEMO_CASES[index].label}`, 'success')
     navigate(`/verify/${created.case_id}`)
   }
 
@@ -119,6 +123,14 @@ export function VerifyPage() {
     setFile(null)
     setPreviewUrl(null)
     navigate('/verify')
+    showToast('Ready for next document', 'info')
+  }
+
+  const copyCaseId = () => {
+    if (caseId) {
+      navigator.clipboard.writeText(caseId)
+      showToast('Case ID copied to clipboard!', 'success')
+    }
   }
 
   const imageUrl = record?.documents?.[0]?.image_url ?? previewUrl
@@ -126,11 +138,23 @@ export function VerifyPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-[22px] font-bold text-ink">Verify Document</h1>
-        <p className="text-[13px] text-ink-muted">
-          Upload or capture a document to start verification.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h1 className="text-[22px] font-bold text-ink">Verify Document</h1>
+          <p className="text-[13px] text-ink-muted">
+            Upload or capture a document to start verification against official issuers.
+          </p>
+        </div>
+        {caseId ? (
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="secondary" onClick={copyCaseId}>
+              📋 Copy Case ID
+            </Button>
+            <Button size="sm" variant="secondary" onClick={reset}>
+              ➕ New Verification
+            </Button>
+          </div>
+        ) : null}
       </div>
 
       <Stepper current={step} />
@@ -149,7 +173,7 @@ export function VerifyPage() {
                 onClick={() => setTab(id)}
                 className={cn(
                   'flex flex-1 items-center justify-center gap-1.5 rounded px-2 py-1.5 text-[12.5px] font-medium transition-colors',
-                  tab === id ? 'bg-white text-brand-700 shadow-card' : 'text-ink-muted hover:text-ink',
+                  tab === id ? 'bg-white text-brand-700 shadow-card font-semibold' : 'text-ink-muted hover:text-ink',
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -173,7 +197,7 @@ export function VerifyPage() {
 
           {file ? (
             <p className="mt-2 truncate text-[12px] text-ink-muted">
-              {file.name} · {humanSize(file.size)}
+              📄 {file.name} · {humanSize(file.size)}
             </p>
           ) : null}
 
@@ -185,9 +209,9 @@ export function VerifyPage() {
                 onClick={() => setDocType(type)}
                 disabled={Boolean(caseId)}
                 className={cn(
-                  'rounded-md border px-3 py-1.5 text-[12.5px] font-medium transition-colors disabled:opacity-60',
+                  'rounded-md border px-3 py-1.5 text-[12.5px] font-medium transition-all duration-150 disabled:opacity-60',
                   docType === type
-                    ? 'border-brand-600 bg-brand-50 text-brand-800'
+                    ? 'border-brand-600 bg-brand-50 text-brand-800 shadow-sm font-semibold'
                     : 'border-line-strong bg-white text-ink-muted hover:border-line-strong hover:text-ink',
                 )}
               >
@@ -202,7 +226,7 @@ export function VerifyPage() {
                 New verification
               </Button>
             ) : (
-              <Button onClick={onSubmit} disabled={!file || busy} className="flex-1">
+              <Button onClick={onSubmit} disabled={!file || busy} className="flex-1 shadow-sm">
                 {busy ? <Spinner className="border-white/40 border-t-white" /> : null}
                 Start verification
               </Button>
@@ -215,19 +239,25 @@ export function VerifyPage() {
 
           {!caseId ? (
             <div className="mt-4 border-t border-line pt-4">
-              <p className="label">Run without an image</p>
-              <p className="mt-1 text-[12px] text-ink-muted">
-                These drive the real checks with known values and need no OCR engine.
+              <p className="label flex items-center justify-between">
+                <span>Run sample demo</span>
+                <span className="text-[11px] font-normal text-brand-700">1-click test</span>
               </p>
-              <div className="mt-2 grid gap-1.5">
+              <p className="mt-1 text-[12px] text-ink-muted">
+                Test official check rules with verified datasets instantly:
+              </p>
+              <div className="mt-2.5 grid gap-1.5">
                 {DEMO_CASES.map((demo, index) => (
                   <button
                     key={demo.label}
                     onClick={() => runDemo(index)}
                     disabled={busy}
-                    className="rounded-md border border-line px-3 py-2 text-left transition-colors hover:border-brand-300 hover:bg-brand-50 disabled:opacity-50"
+                    className="group rounded-lg border border-line p-2.5 text-left transition-all hover:border-brand-400 hover:bg-brand-50/60 hover:shadow-xs disabled:opacity-50"
                   >
-                    <span className="block text-[12.5px] font-medium text-ink">{demo.label}</span>
+                    <span className="flex items-center justify-between">
+                      <span className="text-[12.5px] font-semibold text-ink group-hover:text-brand-800">{demo.label}</span>
+                      <span className="text-[11px] text-brand-600 opacity-0 group-hover:opacity-100 transition-opacity">Run →</span>
+                    </span>
                     <span className="block text-[11.5px] text-ink-muted">{demo.expectation}</span>
                   </button>
                 ))}
@@ -279,7 +309,13 @@ export function VerifyPage() {
           step={3}
           action={
             record ? (
-              <span className="font-mono text-[11px] text-ink-faint">{record.id.slice(0, 12)}…</span>
+              <button
+                onClick={copyCaseId}
+                title="Click to copy case ID"
+                className="font-mono text-[11px] text-ink-faint hover:text-brand-600 transition-colors"
+              >
+                {record.id.slice(0, 12)}… 📋
+              </button>
             ) : null
           }
         >
@@ -292,7 +328,7 @@ export function VerifyPage() {
               </div>
               <ul className="mt-3 space-y-1.5">
                 {checks.map((check) => (
-                  <li key={check.id} className="flex items-start gap-2.5">
+                  <li key={check.id} className="flex items-start gap-2.5 animate-in fade-in duration-200">
                     <ResultPill result={check.result} />
                     <span className="min-w-0 flex-1 text-[12.5px] leading-snug text-ink-soft">
                       {check.citation}
@@ -309,7 +345,7 @@ export function VerifyPage() {
             <>
               <div
                 className={cn(
-                  'rounded-lg border-2 p-4 text-center',
+                  'rounded-xl border-2 p-4 text-center transition-all duration-300 shadow-xs',
                   record.verdict === 'clear' && 'border-clear-border bg-clear-bg',
                   record.verdict === 'reject' && 'border-reject-border bg-reject-bg',
                   record.verdict === 'refer' && 'border-refer-border bg-refer-bg',
@@ -317,7 +353,7 @@ export function VerifyPage() {
               >
                 <p
                   className={cn(
-                    'text-[28px] font-bold leading-none',
+                    'text-[30px] font-extrabold leading-none tracking-wide',
                     record.verdict === 'clear' && 'text-clear',
                     record.verdict === 'reject' && 'text-reject',
                     record.verdict === 'refer' && 'text-refer',
@@ -325,13 +361,13 @@ export function VerifyPage() {
                 >
                   {record.verdict.toUpperCase()}
                 </p>
-                <p className="mt-2 text-[12.5px] leading-relaxed text-ink-soft">{record.reason}</p>
+                <p className="mt-2 text-[12.5px] leading-relaxed text-ink-soft font-medium">{record.reason}</p>
               </div>
 
               <p className="label mt-4">Verification checks</p>
-              <ul className="mt-1.5 space-y-1.5">
+              <ul className="mt-1.5 space-y-2">
                 {checks.map((check) => (
-                  <li key={check.id} className="flex items-start gap-2.5">
+                  <li key={check.id} className="flex items-start gap-2.5 rounded-md p-1 hover:bg-canvas transition-colors">
                     <ResultPill result={check.result} />
                     <span className="min-w-0 flex-1">
                       <span className="block font-mono text-[11.5px] text-ink-muted">
@@ -353,7 +389,7 @@ export function VerifyPage() {
                   New verification
                 </Button>
                 <span className="ml-auto self-center text-[11.5px] text-ink-faint">
-                  {formatDuration(record.duration_ms)}
+                  ⏱️ {formatDuration(record.duration_ms)}
                 </span>
               </div>
             </>
@@ -378,3 +414,4 @@ export function VerifyPage() {
     </div>
   )
 }
+
