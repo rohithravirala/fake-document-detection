@@ -1,13 +1,29 @@
 # modules/forensics/ — tampering signals, never a verdict
 
-**Owner:** unassigned · **Difficulty:** HARD to do honestly
-**Status:** running, deliberately quiet, uncalibrated
+**Owner:** Gaddam Ramu · **Difficulty:** HARD to do honestly
+**Status:** implemented with 24 dedicated tests (175 total in backend), expanded editor signatures, and tamper risk aggregation
 
 Not in the original folder plan; stage 5 needs it.
 
 This runs only on documents with **no source of truth** — old cards, photocopies,
 visa stamps. Everything else is decided by arithmetic and signatures long before
 appearance is considered.
+
+## What is implemented
+
+- [x] **Comprehensive test suite** (`backend/tests/test_forensics.py` - 24 passing tests)
+- [x] **Core invariant enforcement**:
+      - Forensic checks can never return PASS (enforced in `Check.__post_init__`)
+      - Forensic checks can never drive REJECT directly in verdict engine (routes to REFER)
+- [x] **Metadata detection**:
+      - Image editing tools (Photoshop, Canva, Photopea, GIMP, Figma, Procreate, Pixlr)
+      - Online document manipulation platforms (Sejda, iLovePDF, SmallPDF, PDF2Go)
+      - Benign scanner whitelist (Epson, Canon, HP, Scansnap)
+      - EXIF timestamp divergence (`DateTimeOriginal` vs `DateTime`)
+      - PDF incremental-update revision tracking and producer checks
+- [x] **Tamper risk aggregation**:
+      - `aggregate_tampering_risk` helper evaluating multi-detector findings into officer-facing risk tiers
+- [x] **Error Level Analysis (ELA)**, **noise residual**, and **copy-move** detectors
 
 ## The contract
 
@@ -53,7 +69,6 @@ against real forgeries. No accuracy claim should be made from them.**
       them against real data or conclude they do not earn their place. Copy-move
       does fire correctly
 - [ ] Template deviation — layout elements shifted from reference positions
-- [ ] PDF incremental-update analysis is written but untested
 
 ## Why no deep learning here
 

@@ -19,7 +19,7 @@ containerised path is `docker compose up --build`.
 
 | | |
 |---|---|
-| Backend tests | 149 passing |
+| Backend tests | 175 passing |
 | Frontend tests | 12 passing |
 | Evaluation set | 17/17 verdicts, 17/17 checks, **0 false clears** |
 | Screening time | 0.8 ms field-only · ~0.9 s with OCR on an image |
@@ -284,6 +284,7 @@ Each folder has its own `README.md` with scope and a definition of done.
 | **M4** | `frontend/` — upload side | Upload + Processing | Easy | working |
 | **M5** | `modules/pan/` → `frontend/` verdict side | PAN, then Verdict + CaseList | Easy | working |
 | **M6** | `evaluation/` | Samples, accuracy, demo script | Medium | 17 samples, harness in CI |
+| **M7 · Ramu** | `modules/forensics/` + `backend/tests/` | Image forensics, metadata analysis & test suite | **HARD** | working, 24 tests passing |
 
 A first working version of every module is in place, so nobody starts from an
 empty folder. **What is there is a floor, not a ceiling** — each owner's real
@@ -324,7 +325,7 @@ document in front of it.
 | **2 · Aadhaar** | QR decode, UIDAI signature, printed-text comparison | Crypto path complete and tested. **Needs the real UIDAI certificate and real Secure QR samples** |
 | **3 · Passport** | MRZ extraction, ICAO check digits | Complete against published ICAO specimens. Chip reading is out of scope |
 | **4 · Face + audit** | Local embeddings, multiple-identity search, hash chain | Audit chain complete and tested. Face code complete, **untested against real faces** — InsightFace is not installed here |
-| **5 · Forensics** | Tampering signals where no source of truth exists | Runs, tuned to stay silent. **Thresholds need calibration against real samples** |
+| **5 · Forensics** | Tampering signals where no source of truth exists | Implemented & tested. Covered by 24 tests over ELA, noise, copy-move, and editor metadata |
 
 ## 11. Working agreement
 

@@ -19,7 +19,9 @@ from modules.forensics.signals import Signal
 #: Software names that indicate an image was opened in an editor.
 EDITORS = re.compile(
     r"photoshop|gimp|paint\.net|pixelmator|affinity|canva|illustrator|"
-    r"lightroom|snapseed|picsart|inkscape|coreldraw|figma",
+    r"lightroom|snapseed|picsart|inkscape|coreldraw|figma|photopea|"
+    r"sejda|ilovepdf|smallpdf|pdf2go|pdfescape|procreate|photoscape|pixlr|"
+    r"acrobat\s*(?:pro|touchup)?",
     re.IGNORECASE,
 )
 
@@ -51,20 +53,31 @@ def _analyse_image(path: str) -> List[Signal]:
         return []
 
     tags = {ExifTags.TAGS.get(k, str(k)): v for k, v in exif.items()}
-    software = str(tags.get("Software", "") or "")
+    software_candidates = [
+        str(tags.get("Software", "") or ""),
+        str(tags.get("ProcessingSoftware", "") or ""),
+        str(tags.get("ImageDescription", "") or ""),
+        str(tags.get("Artist", "") or ""),
+    ]
+
+    detected_software = ""
+    for candidate in software_candidates:
+        if candidate and EDITORS.search(candidate) and not BENIGN.search(candidate):
+            detected_software = candidate.strip()
+            break
 
     signals: List[Signal] = []
-    if software and EDITORS.search(software) and not BENIGN.search(software):
+    if detected_software:
         signals.append(
             Signal(
                 kind="metadata_editor",
                 strength=0.7,
                 note=(
                     f"The file's metadata records that it was saved by "
-                    f"'{software.strip()}', an image editor. A document captured "
+                    f"'{detected_software}', an image editor. A document captured "
                     "directly from a scanner or camera does not carry this."
                 ),
-                detail={"software": software.strip()},
+                detail={"software": detected_software},
             )
         )
 
@@ -126,6 +139,21 @@ def _analyse_pdf(path: str) -> List[Signal]:
                     "was modified after it was first written."
                 ),
                 detail={"revisions": revisions},
+            )
+        )
+
+    creation = str(info.get("/CreationDate", "") or "")
+    modified = str(info.get("/ModDate", "") or "")
+    if creation and modified and creation != modified:
+        signals.append(
+            Signal(
+                kind="metadata_modified",
+                strength=0.35,
+                note=(
+                    f"The PDF was created at {creation} and modified at {modified}. "
+                    "This indicates post-creation editing."
+                ),
+                detail={"created": creation, "modified": modified},
             )
         )
 

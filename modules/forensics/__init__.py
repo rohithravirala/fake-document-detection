@@ -42,7 +42,12 @@ What each technique can and cannot see
 
 from modules.common.verifier import registry
 from modules.forensics import copymove, ela, metadata, noise
-from modules.forensics.signals import REPORT_THRESHOLD, Signal
+from modules.forensics.signals import (
+    REPORT_THRESHOLD,
+    Signal,
+    TamperRiskSummary,
+    aggregate_tampering_risk,
+)
 from modules.forensics.verifier import ForensicsVerifier
 
 registry.register(ForensicsVerifier())
@@ -51,6 +56,8 @@ __all__ = [
     "REPORT_THRESHOLD",
     "ForensicsVerifier",
     "Signal",
+    "TamperRiskSummary",
+    "aggregate_tampering_risk",
     "copymove",
     "ela",
     "metadata",

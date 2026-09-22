@@ -22,7 +22,7 @@ no source of truth exists to check against.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from modules.common.types import BBox
 
@@ -60,3 +60,70 @@ class Signal:
 #: context. Tuned conservatively: a false REFER costs an officer thirty seconds,
 #: a false REJECT costs a traveller their journey.
 REPORT_THRESHOLD = 0.55
+
+
+@dataclass
+class TamperRiskSummary:
+    """Summary of tampering signals across all forensic detectors."""
+
+    risk_level: str  # "clean", "low_risk", "suspicious", "high_risk"
+    max_strength: float
+    reportable_count: int
+    total_signals: int
+    signals: List[Signal]
+    recommendation: str
+
+    def to_dict(self) -> Dict[str, object]:
+        return {
+            "risk_level": self.risk_level,
+            "max_strength": round(self.max_strength, 3),
+            "reportable_count": self.reportable_count,
+            "total_signals": self.total_signals,
+            "recommendation": self.recommendation,
+            "signals": [s.to_dict() for s in self.signals],
+        }
+
+
+def aggregate_tampering_risk(signals: List[Signal]) -> TamperRiskSummary:
+    """Aggregate individual forensic signals into an officer-facing tampering summary."""
+    if not signals:
+        return TamperRiskSummary(
+            risk_level="clean",
+            max_strength=0.0,
+            reportable_count=0,
+            total_signals=0,
+            signals=[],
+            recommendation="No anomalous forensic signals detected. Proceed with standard verification.",
+        )
+
+    max_str = max(s.strength for s in signals)
+    reportable = [s for s in signals if s.strength >= REPORT_THRESHOLD]
+
+    if any(s.strength >= 0.80 for s in signals) or len(reportable) >= 2:
+        level = "high_risk"
+        rec = (
+            "Multiple or high-confidence tampering anomalies detected. "
+            "Mandatory physical inspection required."
+        )
+    elif reportable:
+        level = "suspicious"
+        rec = (
+            "Forensic signals suggest potential manipulation. "
+            "Refer to questioned-document examiner."
+        )
+    else:
+        level = "low_risk"
+        rec = (
+            "Minor signal variance within normal parameters. "
+            "Document appears unaltered by classical techniques."
+        )
+
+    return TamperRiskSummary(
+        risk_level=level,
+        max_strength=max_str,
+        reportable_count=len(reportable),
+        total_signals=len(signals),
+        signals=signals,
+        recommendation=rec,
+    )
+
