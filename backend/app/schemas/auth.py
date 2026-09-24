@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -10,8 +11,12 @@ class LoginRequest(BaseModel):
     """Credentials provided by the officer."""
 
     name: str = Field(..., min_length=2, max_length=100, description="Officer full name")
-    email: str = Field(..., min_length=3, max_length=120, description="Officer email address")
-    password: str = Field(..., min_length=4, max_length=128, description="Officer password")
+    email: str = Field(
+        ..., min_length=3, max_length=120, description="Officer email address"
+    )
+    password: str = Field(
+        ..., min_length=4, max_length=128, description="Officer password"
+    )
     role: str = Field(
         default="Verification Officer",
         description="Assigned officer role/designation",

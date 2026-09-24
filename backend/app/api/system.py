@@ -109,7 +109,9 @@ def officers(session: Session = Depends(get_session)) -> Dict[str, Any]:
                 "role": profile.role,
                 "source": "authenticated-session",
                 "actions": count,
-                "last_action": last_match.isoformat() if last_match else profile.login_time,
+                "last_action": last_match.isoformat()
+                if last_match
+                else profile.login_time,
                 "email": profile.email,
                 "badge_number": profile.badge_number,
             }
@@ -133,7 +135,9 @@ def officers(session: Session = Depends(get_session)) -> Dict[str, Any]:
 
     return {
         "configured_officer": active_name,
-        "officers": officers_list if officers_list else [
+        "officers": officers_list
+        if officers_list
+        else [
             {
                 "officer_id": settings.officer_id,
                 "actions": 0,

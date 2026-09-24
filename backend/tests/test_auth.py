@@ -51,7 +51,9 @@ def test_login_validation_errors(client: TestClient):
     assert res3.status_code in (400, 422)
 
 
-def test_login_writes_audit_record_and_keeps_chain_intact(client: TestClient, session: Session):
+def test_login_writes_audit_record_and_keeps_chain_intact(
+    client: TestClient, session: Session
+):
     payload = {
         "name": "Rohith Ravirala",
         "email": "rohith.ravirala@svaram.gov.in",
@@ -92,7 +94,9 @@ def test_login_writes_audit_record_and_keeps_chain_intact(client: TestClient, se
     assert "Rohith Ravirala" in officer_names
 
     # Sign out
-    logout_resp = client.post("/api/auth/logout", headers={"Authorization": f"Bearer {token}"})
+    logout_resp = client.post(
+        "/api/auth/logout", headers={"Authorization": f"Bearer {token}"}
+    )
     assert logout_resp.status_code == 200
 
     # /me after logout should return unauthenticated

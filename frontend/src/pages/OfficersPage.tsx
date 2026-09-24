@@ -30,7 +30,7 @@ export function OfficersPage() {
         </Link>
       </div>
 
-      <Note tone={user ? 'clear' : 'warn'}>
+      <Note tone={user ? 'info' : 'warn'}>
         {user ? (
           <IconCheck className="h-4 w-4 shrink-0 text-clear" />
         ) : (
@@ -57,7 +57,7 @@ export function OfficersPage() {
           label="Sign-in status"
           value={user ? 'Authenticated' : 'Signed Out'}
           sub="Officer Portal active"
-          tone={user ? 'clear' : 'warn'}
+          tone={user ? 'clear' : 'refer'}
         />
         <StatTile
           label="Badge Number"

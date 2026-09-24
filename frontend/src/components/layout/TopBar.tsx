@@ -1,6 +1,9 @@
+import { useState, useRef, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useHealth } from '@/api/hooks'
 import { DigitalIndiaMark, SvaramMark } from './Brand'
-import { IconAlert } from '@/components/common/Icons'
+import { IconAlert, IconCheck, IconShield, IconUsers } from '@/components/common/Icons'
+import { useAuth } from '@/lib/auth'
 
 /**
  * The capability strip under the masthead.
@@ -49,13 +52,6 @@ function Capabilities() {
  * AppShell offsets the sticky sidebar by their sum (86px). Change a height
  * here and that offset has to move with it.
  */
-import { useState, useRef, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useHealth } from '@/api/hooks'
-import { DigitalIndiaMark, SvaramMark } from './Brand'
-import { IconAlert, IconCheck, IconShield, IconUsers } from '@/components/common/Icons'
-import { useAuth } from '@/lib/auth'
-
 export function TopBar({ onMenu }: { onMenu: () => void }) {
   const { data } = useHealth()
   const { user, logout, isAuthenticated } = useAuth()

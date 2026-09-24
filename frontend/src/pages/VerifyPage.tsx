@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { DropZone } from '@/components/upload/DropZone'
 import { CameraCapture } from '@/components/upload/CameraCapture'
 import { DocumentPreview } from '@/components/upload/DocumentPreview'
