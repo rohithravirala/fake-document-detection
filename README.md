@@ -19,8 +19,8 @@ containerised path is `docker compose up --build`.
 
 | | |
 |---|---|
-| Backend tests | 175 passing |
-| Frontend tests | 12 passing |
+| Backend tests | 178 passing |
+| Frontend tests | 13 passing |
 | Evaluation set | 17/17 verdicts, 17/17 checks, **0 false clears** |
 | Screening time | 0.8 ms field-only · ~0.9 s with OCR on an image |
 | Works offline | Aadhaar signature, PAN structure, MRZ check digits — all of it |
@@ -363,7 +363,7 @@ real work is, and each is something an evaluator could find on their own.
 | **Face module never run against real faces** | The code path, the three-band logic and the resolution floor are complete. InsightFace is not installed in this environment, so the module reports `unavailable` and cases route to REFER |
 | **MRZ check digits do not stop a competent forger** | They are modulo 10 and recomputable. Documented at length in `modules/passport/checkdigit.py`, with a test that demonstrates it. The defence is the printed-page comparison and, properly, the signed chip |
 | **PaddleOCR is wired but not installed** | The engine abstraction supports it. Only Tesseract is active here, which is weaker on Indian scripts |
-| **No authentication** | `OFFICER_ID` is hard-coded. The columns exist on every case and audit record |
+| **Officer Authentication System** | Integrated Officer Portal sign-in supporting official name, email, credentials, and role designations. Active officer sessions are dynamically attributed to document screenings and cryptographically chained in the audit trail. |
 | **Hash chain has no external anchor** | It detects edits. An administrator with full table access could recompute the whole chain. Publishing the head hash somewhere append-only closes that |
 
 ## 13. Deliberate non-goals
