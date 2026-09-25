@@ -3,43 +3,109 @@
 @tailwind utilities;
 
 @layer base {
-  html { -webkit-text-size-adjust: 100%; }
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
 
   body {
-    @apply bg-canvas text-ink antialiased;
+    @apply bg-canvas text-ink antialiased selection:bg-brand-500 selection:text-white;
     font-size: 14px;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
   /* Officers work at a counter under time pressure. Focus must be unmissable. */
   :focus-visible {
-    @apply outline-none ring-2 ring-brand-600 ring-offset-1;
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-white;
   }
 
   /* Devanagari runs alongside Latin throughout the interface. */
-  .deva { font-family: theme('fontFamily.deva'); }
+  .deva {
+    font-family: theme('fontFamily.deva');
+  }
+
+  /* Custom sleek scrollbar for document lists and tables */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-line-strong/60 rounded-full hover:bg-ink-muted/50 transition-colors;
+  }
 }
 
 @layer components {
+  /* Elevated cards with subtle border highlight */
   .card {
-    @apply rounded-card border border-line bg-white shadow-card;
+    @apply rounded-card border border-line bg-white shadow-card transition-all duration-200 hover:shadow-card-hover;
+  }
+  .card-interactive {
+    @apply card hover:border-brand-300 hover:shadow-md cursor-pointer;
   }
   .card-head {
-    @apply flex items-center gap-2.5 border-b border-line px-5 py-3.5;
+    @apply flex items-center justify-between gap-2.5 border-b border-line px-5 py-3.5 bg-gradient-to-r from-white to-canvas/40;
   }
   .card-title {
-    @apply text-[15px] font-semibold text-ink;
+    @apply text-[15px] font-semibold text-ink flex items-center gap-2;
   }
   .step-num {
-    @apply inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-600 text-[12px] font-semibold text-white;
+    @apply inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-brand-600 text-[12px] font-bold text-white shadow-sm ring-2 ring-brand-200;
   }
   .label {
     @apply text-[11px] font-semibold uppercase tracking-wider text-ink-faint;
   }
   .field-row {
-    @apply grid grid-cols-[minmax(96px,auto)_1fr] gap-x-3 py-[5px] text-[13px];
+    @apply grid grid-cols-[minmax(110px,auto)_1fr] gap-x-3 py-1.5 text-[13px] border-b border-line/40 last:border-0;
   }
   .tri-rule {
-    background: linear-gradient(90deg, theme('colors.saffron') 0 33%, #fff 33% 66%, theme('colors.india') 66% 100%);
+    background: linear-gradient(90deg, #FF9933 0 33%, #ffffff 33% 66%, #138808 66% 100%);
+  }
+  .tri-badge {
+    background: linear-gradient(135deg, rgba(255, 153, 51, 0.12) 0%, rgba(255, 255, 255, 0.8) 50%, rgba(19, 136, 8, 0.12) 100%);
+  }
+
+  /* Glassmorphic floating surfaces */
+  .glass-panel {
+    @apply bg-white/80 backdrop-blur-md border border-white/50 shadow-panel;
+  }
+
+  /* Holographic scanning line effect */
+  .scanner-line {
+    background: linear-gradient(180deg, rgba(29, 87, 235, 0) 0%, rgba(59, 115, 246, 0.8) 50%, rgba(29, 87, 235, 0) 100%);
+    box-shadow: 0 0 15px rgba(59, 115, 246, 0.6);
+  }
+
+  /* Pulse badges */
+  .pulse-dot-clear {
+    @apply relative flex h-2 w-2;
+  }
+  .pulse-dot-clear::before {
+    content: '';
+    @apply absolute inline-flex h-full w-full animate-ping rounded-full bg-clear opacity-75;
+  }
+  .pulse-dot-clear::after {
+    content: '';
+    @apply relative inline-flex h-2 w-2 rounded-full bg-clear;
+  }
+
+  .pulse-dot-reject {
+    @apply relative flex h-2 w-2;
+  }
+  .pulse-dot-reject::before {
+    content: '';
+    @apply absolute inline-flex h-full w-full animate-ping rounded-full bg-reject opacity-75;
+  }
+  .pulse-dot-reject::after {
+    content: '';
+    @apply relative inline-flex h-2 w-2 rounded-full bg-reject;
+  }
+
+  /* Keyboard shortcut hint badge */
+  .kbd-key {
+    @apply inline-flex items-center justify-center rounded border border-line-strong/80 bg-canvas px-1.5 py-0.5 font-mono text-[10px] font-semibold text-ink-soft shadow-xs;
   }
 }
 
@@ -50,5 +116,18 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .tnum { font-variant-numeric: tabular-nums; }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@keyframes scanAnimation {
+  0% { top: 0%; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.animate-scan {
+  animation: scanAnimation 2.4s ease-in-out infinite;
 }
