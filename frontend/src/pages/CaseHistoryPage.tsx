@@ -2,16 +2,16 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCase, useCases, useStats } from '@/api/hooks'
 import { StatTile } from '@/components/common/StatTile'
-import { Button, Card, EmptyState, Row, Spinner } from '@/components/common/Primitives'
-import { ResultPill, VerdictPill } from '@/components/common/Badge'
-import { IconCheck, IconClock, IconCross, IconDoc, IconSearch } from '@/components/common/Icons'
+import { Button, EmptyState, Row, Spinner } from '@/components/common/Primitives'
+import { VerdictPill } from '@/components/common/Badge'
+import { IconCheck, IconClock, IconCross, IconDoc, IconSearch, IconDownload } from '@/components/common/Icons'
 import { showToast } from '@/components/common/Toast'
 import { DOC_TYPE_LABELS, type DocType } from '@/api/types'
 import { formatDuration, formatTimestamp } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 const VERDICT_FILTERS = [
-  { id: '', label: 'All statuses' },
+  { id: '', label: 'All Statuses' },
   { id: 'clear', label: 'Cleared' },
   { id: 'reject', label: 'Rejected' },
   { id: 'refer', label: 'Referred' },
@@ -59,66 +59,70 @@ export function CaseHistoryPage() {
     a.download = `svaram_cases_export_${new Date().toISOString().slice(0, 10)}.csv`
     a.click()
     URL.revokeObjectURL(url)
-    showToast(`Exported ${rows.length} cases to CSV`, 'success')
+    showToast(`Exported ${rows.length} cases to CSV spreadsheet`, 'success')
   }
 
   const all = stats?.all_time
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-[22px] font-bold text-ink">Case History</h1>
-          <p className="text-[13px] text-ink-muted">Every screening, with the reason it was decided.</p>
+          <h1 className="text-[22px] font-extrabold tracking-tight text-ink">Case Archive & Records</h1>
+          <p className="text-[13px] text-ink-muted">
+            Tamper-evident log of all past identity screening records with defensible citations.
+          </p>
         </div>
-        <Button size="sm" variant="secondary" onClick={exportCSV} disabled={!rows.length}>
-          📥 Export CSV ({rows.length})
+        <Button size="sm" variant="secondary" onClick={exportCSV} disabled={!rows.length} className="shadow-xs">
+          <IconDownload className="h-3.5 w-3.5" />
+          <span>Export CSV Records ({rows.length})</span>
         </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatTile label="Total cases" value={all?.total ?? '—'} tone="brand" icon={<IconDoc />} />
+        <StatTile label="Total Archive Volume" value={all?.total ?? '—'} tone="brand" icon={<IconDoc />} />
         <StatTile
-          label="Cleared"
+          label="Total Cleared"
           value={all?.clear ?? '—'}
-          sub={all ? `${all.clear_share}%` : undefined}
+          sub={all ? `${all.clear_share}% genuine` : undefined}
           tone="clear"
           icon={<IconCheck />}
         />
         <StatTile
-          label="Rejected"
+          label="Total Intercepted"
           value={all?.reject ?? '—'}
-          sub={all ? `${all.reject_share}%` : undefined}
+          sub={all ? `${all.reject_share}% fraudulent` : undefined}
           tone="reject"
           icon={<IconCross />}
         />
         <StatTile
-          label="Referred"
+          label="Total Referred"
           value={all?.refer ?? '—'}
-          sub={all ? `${all.refer_share}%` : undefined}
+          sub={all ? `${all.refer_share}% manual examination` : undefined}
           tone="refer"
           icon={<IconClock />}
         />
       </div>
 
-      <div className={cn('grid gap-4', selected ? 'xl:grid-cols-[1fr_360px]' : 'grid-cols-1')}>
-        <div className="card min-w-0">
-          <div className="flex flex-wrap items-center gap-2 border-b border-line p-3">
-            <label className="relative min-w-[200px] flex-1">
-              <IconSearch className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
+      <div className={cn('grid gap-5', selected ? 'xl:grid-cols-[1fr_380px]' : 'grid-cols-1')}>
+        <div className="card min-w-0 overflow-hidden shadow-card">
+          {/* Search and Filters Strip */}
+          <div className="flex flex-wrap items-center gap-2.5 border-b border-line bg-canvas/40 p-3.5">
+            <div className="relative min-w-[220px] flex-1">
+              <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by case ID, document type or reason"
-                className="w-full rounded-md border border-line-strong py-1.5 pl-8 pr-3 text-[13px]"
+                placeholder="Search case ID, reasons, or credentials..."
+                className="w-full rounded-xl border border-line bg-white py-1.5 pl-9 pr-3 text-[13px] text-ink placeholder:text-ink-faint focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               />
-            </label>
+            </div>
             <select
               value={docType}
               onChange={(e) => setDocType(e.target.value)}
-              className="rounded-md border border-line-strong px-2 py-1.5 text-[13px]"
+              className="rounded-xl border border-line bg-white px-3 py-1.5 text-[12.5px] font-medium text-ink focus:border-brand-500 focus:outline-none"
             >
-              <option value="">All document types</option>
+              <option value="">All Document Types</option>
               {Object.entries(DOC_TYPE_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
               ))}
@@ -126,7 +130,7 @@ export function CaseHistoryPage() {
             <select
               value={verdict}
               onChange={(e) => setVerdict(e.target.value)}
-              className="rounded-md border border-line-strong px-2 py-1.5 text-[13px]"
+              className="rounded-xl border border-line bg-white px-3 py-1.5 text-[12.5px] font-medium text-ink focus:border-brand-500 focus:outline-none"
             >
               {VERDICT_FILTERS.map((f) => (
                 <option key={f.id} value={f.id}>{f.label}</option>
@@ -138,27 +142,27 @@ export function CaseHistoryPage() {
                 variant="ghost"
                 onClick={() => { setQuery(''); setDocType(''); setVerdict('') }}
               >
-                Clear filters
+                Reset
               </Button>
             ) : null}
           </div>
 
           {isLoading ? (
-            <div className="p-6"><Spinner /></div>
+            <div className="p-8 text-center"><Spinner className="mx-auto h-6 w-6" /></div>
           ) : rows.length === 0 ? (
-            <div className="p-5">
+            <div className="p-6">
               <EmptyState
-                title="No cases match"
-                detail="Every screening is recorded here and written to the audit chain."
+                title="No case records matched"
+                detail="Every screening transaction is recorded in this tamper-proof database."
               />
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[720px] text-[13px]">
-                <thead className="border-b border-line bg-canvas">
+                <thead className="border-b border-line bg-canvas/80 text-[11px] font-bold uppercase tracking-wider text-ink-muted">
                   <tr>
-                    {['Case ID', 'Date & time', 'Document', 'Status', 'Reason', 'Time', ''].map((h) => (
-                      <th key={h} className="label whitespace-nowrap px-3 py-2 text-left">{h}</th>
+                    {['Case Ref', 'Date & Time', 'Document Type', 'Verdict', 'Finding Reason', 'Latency', ''].map((h) => (
+                      <th key={h} className="px-4 py-2.5 text-left">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -168,39 +172,41 @@ export function CaseHistoryPage() {
                       key={item.id}
                       onClick={() => setSelected(item.id)}
                       className={cn(
-                        'cursor-pointer transition-colors hover:bg-brand-50/50',
-                        selected === item.id && 'bg-brand-50 font-medium',
+                        'cursor-pointer transition-colors hover:bg-brand-50/40',
+                        selected === item.id && 'bg-brand-50/80 font-medium',
                       )}
                     >
-                      <td className="whitespace-nowrap px-3 py-2.5 font-mono text-[11.5px] text-ink-muted">
-                        {item.id.slice(0, 12)}…
+                      <td className="whitespace-nowrap px-4 py-3 font-mono text-[11.5px] text-brand-800 font-semibold">
+                        {item.id.slice(0, 14)}…
                       </td>
-                      <td className="whitespace-nowrap px-3 py-2.5 text-ink-muted">
+                      <td className="whitespace-nowrap px-4 py-3 text-[12px] text-ink-muted">
                         {formatTimestamp(item.created_at)}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-2.5">
+                      <td className="whitespace-nowrap px-4 py-3 font-medium text-ink">
                         {item.doc_types.map((t) => DOC_TYPE_LABELS[t as DocType] ?? t).join(', ') || '—'}
                       </td>
-                      <td className="px-3 py-2.5">
+                      <td className="px-4 py-3">
                         {item.verdict ? (
                           <VerdictPill verdict={item.verdict} />
                         ) : (
-                          <span className="text-[11.5px] text-ink-faint">{item.status}</span>
+                          <span className="rounded bg-canvas px-2 py-0.5 text-[11px] text-ink-muted border border-line">
+                            {item.status}
+                          </span>
                         )}
                       </td>
-                      <td className="max-w-[280px] px-3 py-2.5">
-                        <span className="line-clamp-2 text-ink-muted">{item.reason ?? '—'}</span>
+                      <td className="max-w-[300px] px-4 py-3">
+                        <span className="line-clamp-2 text-[12.5px] text-ink-soft">{item.reason ?? '—'}</span>
                       </td>
-                      <td className="tnum whitespace-nowrap px-3 py-2.5 text-ink-faint">
+                      <td className="tnum whitespace-nowrap px-4 py-3 font-mono text-[11.5px] text-ink-faint">
                         {formatDuration(item.duration_ms)}
                       </td>
-                      <td className="px-3 py-2.5">
+                      <td className="px-4 py-3 text-right">
                         <Link
                           to={`/cases/${item.id}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="whitespace-nowrap font-medium text-brand-700 hover:underline"
+                          className="rounded-lg border border-line bg-white px-2.5 py-1 text-[11.5px] font-semibold text-brand-700 shadow-xs hover:bg-brand-50 hover:border-brand-300 transition"
                         >
-                          Open →
+                          Dossier →
                         </Link>
                       </td>
                     </tr>
@@ -209,87 +215,43 @@ export function CaseHistoryPage() {
               </table>
             </div>
           )}
-          <div className="flex items-center justify-between border-t border-line px-3 py-2 text-[12px] text-ink-faint">
-            <span>Showing {rows.length} of {cases?.length ?? 0} cases</span>
-            {rows.length > 0 ? (
-              <span>Click any row for side panel details</span>
-            ) : null}
-          </div>
         </div>
 
-        {selected ? (
-          <Card
-            title="Case details"
-            action={
-              <button onClick={() => setSelected(null)} className="text-ink-faint hover:text-ink" aria-label="Close">
-                <IconCross className="h-4 w-4" />
+        {/* Selected Case Side Drawer */}
+        {selected && detail ? (
+          <aside className="card space-y-4 p-5 animate-in fade-in slide-in-from-right-4 duration-200">
+            <div className="flex items-center justify-between border-b border-line pb-3">
+              <span className="label">Quick Case Inspector</span>
+              <button
+                onClick={() => setSelected(null)}
+                className="text-ink-muted hover:text-ink text-xs font-bold"
+              >
+                ✕ Close
               </button>
-            }
-          >
-            {!detail ? (
-              <Spinner />
-            ) : (
-              <>
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    {detail.verdict ? <VerdictPill verdict={detail.verdict} /> : null}
-                    <span className="font-mono text-[11.5px] text-ink-faint">{detail.id.slice(0, 12)}…</span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(detail.id)
-                      showToast('Case ID copied to clipboard', 'success')
-                    }}
-                    className="text-[11px] text-brand-600 hover:underline font-mono"
-                  >
-                    Copy ID
-                  </button>
-                </div>
-                <dl className="mt-3">
-                  <Row label="Screened" value={formatTimestamp(detail.created_at)} />
-                  <Row label="Officer" value={detail.officer_id} />
-                  <Row label="Duration" value={formatDuration(detail.duration_ms)} />
-                  <Row
-                    label="Documents"
-                    value={detail.doc_types.map((t) => DOC_TYPE_LABELS[t as DocType] ?? t).join(', ')}
-                  />
-                </dl>
+            </div>
 
-                <p className="label mt-4">Verification timeline</p>
-                <ol className="mt-2 space-y-0">
-                  {(detail.documents[0]?.checks ?? []).map((check) => (
-                    <li key={check.id} className="flex items-start gap-2.5 border-l border-line py-1.5 pl-3 hover:bg-canvas transition-colors">
-                      <ResultPill result={check.result} />
-                      <span className="min-w-0 flex-1 font-mono text-[11px] text-ink-muted">
-                        {check.check_id}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
+            {detail.verdict ? (
+              <div className="space-y-2">
+                <VerdictPill verdict={detail.verdict} />
+                <p className="text-[13px] font-medium leading-relaxed text-ink">{detail.reason}</p>
+              </div>
+            ) : null}
 
-                <div
-                  className={cn(
-                    'mt-4 rounded-md border px-3 py-2.5 text-[12.5px] leading-relaxed font-medium shadow-xs',
-                    detail.verdict === 'clear' && 'border-clear-border bg-clear-bg text-ink-soft',
-                    detail.verdict === 'reject' && 'border-reject-border bg-reject-bg text-ink-soft',
-                    detail.verdict === 'refer' && 'border-refer-border bg-refer-bg text-ink-soft',
-                  )}
-                >
-                  {detail.reason}
-                </div>
+            <dl className="space-y-1.5 border-t border-line pt-3 text-[12.5px]">
+              <Row label="Full ID" value={<span className="font-mono text-[10.5px] break-all">{detail.id}</span>} />
+              <Row label="Officer" value={detail.officer_id || 'On duty'} />
+              <Row label="Latency" value={formatDuration(detail.duration_ms)} />
+            </dl>
 
-                <Link
-                  to={`/cases/${detail.id}`}
-                  className="mt-3 inline-block text-[12.5px] font-medium text-brand-700 hover:underline"
-                >
-                  Open full evidence →
-                </Link>
-              </>
-            )}
-          </Card>
+            <Link
+              to={`/cases/${detail.id}`}
+              className="mt-4 block w-full rounded-xl bg-brand-600 py-2.5 text-center text-[12.5px] font-bold text-white shadow-xs hover:bg-brand-700 transition"
+            >
+              Open Full Forensic Dossier →
+            </Link>
+          </aside>
         ) : null}
       </div>
     </div>
   )
 }
-

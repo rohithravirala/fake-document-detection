@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CHECK_TYPE_WEIGHT, fieldLabel, formatDuration } from '../format'
+import { CHECK_TYPE_WEIGHT, fieldLabel, formatDuration, maskAadhaar, truncateHash } from '../format'
 import type { CheckType } from '@/api/types'
 
 describe('check type weighting', () => {
@@ -38,5 +38,13 @@ describe('formatting', () => {
     expect(fieldLabel('pan_number')).toBe('PAN Number')
     expect(fieldLabel('mrz')).toBe('MRZ')
     expect(fieldLabel('date_of_birth')).toBe('Date Of Birth')
+  })
+
+  it('masks sensitive Aadhaar numbers for privacy', () => {
+    expect(maskAadhaar('987654321098')).toBe('XXXX-XXXX-1098')
+  })
+
+  it('truncates cryptographic hashes cleanly', () => {
+    expect(truncateHash('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 8)).toBe('e3b0c442…')
   })
 })

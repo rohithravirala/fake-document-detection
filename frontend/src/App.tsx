@@ -13,16 +13,44 @@ import { AuditLogsPage } from '@/pages/AuditLogsPage'
 import { OfficersPage } from '@/pages/OfficersPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 
+import { useEffect, useState } from 'react'
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 5_000 },
   },
 })
 
+function OfflineBanner() {
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true)
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
+
+  if (isOnline) return null
+
+  return (
+    <div className="bg-amber-600 text-white text-xs font-semibold px-4 py-1.5 flex items-center justify-between text-center sticky top-0 z-50 shadow-md">
+      <span>⚠️ Offline Mode Active — Local verification cache in use. Sync will resume automatically upon network reconnection.</span>
+      <span className="font-mono text-[10px] bg-amber-700/60 px-2 py-0.5 rounded">STATION CACHE</span>
+    </div>
+  )
+}
+
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <OfflineBanner />
         <BrowserRouter>
           <Routes>
             <Route path="login" element={<LoginPage />} />
@@ -45,3 +73,4 @@ export function App() {
     </QueryClientProvider>
   )
 }
+

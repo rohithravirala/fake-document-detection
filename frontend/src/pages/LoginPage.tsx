@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { SvaramMark, DigitalIndiaMark } from '@/components/layout/Brand'
+import { SvaramMark, DigitalIndiaMark, SihBadge } from '@/components/layout/Brand'
 import { PRESET_OFFICERS, useAuth } from '@/lib/auth'
-import { IconAlert, IconCheck, IconShield, IconUsers } from '@/components/common/Icons'
+import { IconAlert, IconCheck, IconShield, IconUsers, IconLock } from '@/components/common/Icons'
 
 export function LoginPage() {
   const { login, switchPresetOfficer, user } = useAuth()
@@ -79,83 +79,74 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-canvas flex flex-col justify-between">
-      {/* Top national bar */}
-      <header className="border-b border-line bg-white px-4 py-2.5 sm:px-8">
+    <div className="min-h-screen bg-canvas flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+      {/* Top national masthead */}
+      <header className="border-b border-line bg-white/95 px-4 py-3 sm:px-8 backdrop-blur-md sticky top-0 z-20">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-3">
-            <SvaramMark className="h-8 w-8 shrink-0" />
+            <SvaramMark className="h-8 w-8 shrink-0 drop-shadow-sm" />
             <div>
-              <span className="text-[17px] font-bold tracking-[0.16em] text-navy-800">SVARAM</span>
-              <span className="hidden sm:inline text-xs text-ink-muted ml-2">| सत्यमेव जयते</span>
+              <span className="text-[18px] font-extrabold tracking-[0.16em] text-navy-900">SVARAM</span>
+              <span className="hidden sm:inline text-xs text-ink-muted ml-2 font-medium">| सत्यमेव जयते</span>
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <SihBadge className="hidden sm:inline-flex" />
             <DigitalIndiaMark className="h-6 text-navy-800" />
-            <span className="hidden md:inline rounded bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-800 border border-brand-200">
-              #SIH2026 Portal
-            </span>
           </div>
         </div>
       </header>
 
-      {/* Main Login Card */}
+      {/* Main Authentication Center */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 my-6">
-        <div className="w-full max-w-xl">
-          {/* Svaram Header Card */}
-          <div className="bg-white rounded-t-card border-t border-x border-line p-6 sm:p-8 text-center shadow-card relative overflow-hidden">
+        <div className="w-full max-w-lg">
+          {/* Header Card */}
+          <div className="bg-white rounded-t-2xl border-t border-x border-line p-6 sm:p-8 text-center shadow-card relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1.5 tri-rule" />
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 border border-brand-200 shadow-sm text-brand-700">
+            <div className="mx-auto mb-3.5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 border border-brand-200 shadow-xs text-brand-600">
               <IconShield className="h-7 w-7" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-navy-900">
+            <h1 className="text-2xl font-extrabold tracking-tight text-navy-950 sm:text-3xl">
               Officer Portal Sign-In
             </h1>
-            <p className="mt-1.5 text-[13.5px] text-ink-muted">
-              Enter your credentials to access the AI Document Fraud & Identity Screening Console
+            <p className="mt-1.5 text-[13px] text-ink-muted max-w-md mx-auto">
+              Secure authentication for AI Document Screening & Forensic Fraud Verification Console.
             </p>
           </div>
 
           {/* Form Card Body */}
-          <div className="bg-white border border-line p-6 sm:p-8 shadow-card">
+          <div className="bg-white border border-line p-6 sm:p-8 shadow-card space-y-5">
             {error ? (
-              <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-reject-border bg-reject-bg p-3.5 text-[13px] text-reject-dark">
+              <div className="flex items-start gap-2.5 rounded-xl border border-reject-border bg-reject-bg p-3.5 text-[12.5px] text-reject-dark font-medium animate-in fade-in">
                 <IconAlert className="h-4 w-4 shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             ) : null}
 
             {success ? (
-              <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-clear-border bg-clear-bg p-3.5 text-[13px] text-clear-dark">
+              <div className="flex items-start gap-2.5 rounded-xl border border-clear-border bg-clear-bg p-3.5 text-[12.5px] text-clear-dark font-medium animate-in fade-in">
                 <IconCheck className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>Credentials verified. Redirecting to verification console...</span>
+                <span>Officer authenticated. Initializing cryptographic environment...</span>
               </div>
             ) : null}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Officer Full Name */}
               <div>
-                <label className="block text-[12px] font-semibold text-ink uppercase tracking-wider mb-1.5">
+                <label className="block text-[11.5px] font-bold text-ink uppercase tracking-wider mb-1.5">
                   Officer Full Name <span className="text-reject">*</span>
                 </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. Ramu Gaddam"
-                    className="w-full rounded-md border border-line bg-canvas/40 px-3.5 py-2.5 text-[14px] text-ink placeholder-ink-faint transition focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20"
-                  />
-                </div>
-                <p className="mt-1 text-[11px] text-ink-muted">
-                  Name will appear on case screening logs, cryptographic audit chain, and case history.
-                </p>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Ramu Gaddam"
+                  className="w-full rounded-xl border border-line bg-canvas/40 px-3.5 py-2.5 text-[13.5px] text-ink placeholder:text-ink-faint focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-500 font-medium"
+                />
               </div>
 
-              {/* Official Email */}
               <div>
-                <label className="block text-[12px] font-semibold text-ink uppercase tracking-wider mb-1.5">
+                <label className="block text-[11.5px] font-bold text-ink uppercase tracking-wider mb-1.5">
                   Official Email Address <span className="text-reject">*</span>
                 </label>
                 <input
@@ -163,23 +154,22 @@ export function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. officer@svaram.gov.in"
-                  className="w-full rounded-md border border-line bg-canvas/40 px-3.5 py-2.5 text-[14px] text-ink placeholder-ink-faint transition focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  placeholder="e.g. officer@mha.gov.in"
+                  className="w-full rounded-xl border border-line bg-canvas/40 px-3.5 py-2.5 text-[13.5px] text-ink placeholder:text-ink-faint focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-500 font-medium"
                 />
               </div>
 
-              {/* Password */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-[12px] font-semibold text-ink uppercase tracking-wider">
+                  <label className="block text-[11.5px] font-bold text-ink uppercase tracking-wider">
                     Password <span className="text-reject">*</span>
                   </label>
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-[11.5px] text-brand-600 hover:text-brand-800 font-medium"
+                    className="text-[11px] text-brand-600 hover:text-brand-800 font-bold"
                   >
-                    {showPassword ? 'Hide' : 'Show'} password
+                    {showPassword ? 'Hide' : 'Show'}
                   </button>
                 </div>
                 <input
@@ -187,44 +177,42 @@ export function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your security password"
-                  className="w-full rounded-md border border-line bg-canvas/40 px-3.5 py-2.5 text-[14px] text-ink placeholder-ink-faint transition focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  placeholder="Enter credential password"
+                  className="w-full rounded-xl border border-line bg-canvas/40 px-3.5 py-2.5 text-[13.5px] text-ink placeholder:text-ink-faint focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-500 font-mono"
                 />
               </div>
 
-              {/* Role Selection */}
               <div>
-                <label className="block text-[12px] font-semibold text-ink uppercase tracking-wider mb-1.5">
+                <label className="block text-[11.5px] font-bold text-ink uppercase tracking-wider mb-1.5">
                   Designation / Role
                 </label>
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full rounded-md border border-line bg-white px-3.5 py-2.5 text-[13.5px] text-ink transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  className="w-full rounded-xl border border-line bg-canvas/40 px-3.5 py-2.5 text-[13px] font-medium text-ink focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer"
                 >
-                  <option value="Senior Verification Officer">Senior Verification Officer</option>
-                  <option value="Lead System Administrator">Lead System Administrator</option>
-                  <option value="Forensic Document Examiner">Forensic Document Examiner</option>
-                  <option value="Supervisory Inspector">Supervisory Inspector</option>
-                  <option value="Field Verification Officer">Field Verification Officer</option>
+                  <option value="Senior Verification Officer">Level 3 · Senior Verification Officer</option>
+                  <option value="Lead System Administrator">Level 3 · Lead System Administrator</option>
+                  <option value="Forensic Document Examiner">Level 2 · Forensic Document Examiner</option>
+                  <option value="Supervisory Inspector">Level 2 · Supervisory Inspector</option>
+                  <option value="Field Verification Officer">Level 1 · Field Verification Officer</option>
                 </select>
               </div>
 
-              {/* Submit Button */}
               <div className="pt-2">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-md bg-navy-800 px-4 py-3 text-[14px] font-semibold text-white shadow-sm transition hover:bg-navy-900 active:scale-[0.99] disabled:opacity-60"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-navy-900 to-navy-800 px-4 py-3 text-[14px] font-bold text-white shadow-md transition hover:opacity-95 active:scale-[0.99] disabled:opacity-60 cursor-pointer"
                 >
                   {loading ? (
                     <>
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      <span>Authenticating Officer...</span>
+                      <span>Authenticating Credentials…</span>
                     </>
                   ) : (
                     <>
-                      <IconShield className="h-4 w-4" />
+                      <IconLock className="h-4 w-4" />
                       <span>Sign In to Verification Console</span>
                     </>
                   )}
@@ -232,14 +220,14 @@ export function LoginPage() {
               </div>
             </form>
 
-            {/* Quick Demo Switcher */}
-            <div className="mt-6 border-t border-line pt-5">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[11.5px] font-semibold uppercase tracking-wider text-ink-muted flex items-center gap-1.5">
-                  <IconUsers className="h-3.5 w-3.5" />
+            {/* Quick 1-Click Persona Access */}
+            <div className="border-t border-line/80 pt-4">
+              <div className="flex items-center justify-between mb-2.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-ink-muted flex items-center gap-1.5">
+                  <IconUsers className="h-3.5 w-3.5 text-brand-600" />
                   Quick Sign-In as Project Officer
                 </span>
-                <span className="text-[11px] text-ink-faint">1-Click Access</span>
+                <span className="font-mono text-[10.5px] text-brand-700">1-Click Access</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {PRESET_OFFICERS.map((preset, idx) => (
@@ -247,13 +235,13 @@ export function LoginPage() {
                     key={preset.email}
                     type="button"
                     onClick={() => handleSelectPreset(idx)}
-                    className="flex flex-col items-start p-2.5 text-left rounded-lg border border-line hover:border-brand-400 hover:bg-brand-50/50 transition group"
+                    className="flex flex-col items-start p-2.5 text-left rounded-xl border border-line bg-canvas/50 hover:border-brand-400 hover:bg-brand-50/60 transition group cursor-pointer shadow-xs"
                   >
                     <div className="flex items-center gap-2 w-full">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-[11px] font-bold text-brand-800 group-hover:bg-brand-200">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-[11px] font-bold text-brand-800 group-hover:bg-brand-600 group-hover:text-white transition">
                         {preset.name.slice(0, 1)}
                       </span>
-                      <span className="text-[12.5px] font-semibold text-ink group-hover:text-brand-800 truncate">
+                      <span className="text-[12.5px] font-bold text-ink group-hover:text-brand-800 truncate">
                         {preset.name}
                       </span>
                     </div>
@@ -266,12 +254,12 @@ export function LoginPage() {
             </div>
           </div>
 
-          {/* Statutory Security Disclaimer */}
-          <div className="bg-canvas border-b border-x border-line rounded-b-card p-4 text-[11px] leading-relaxed text-ink-muted">
+          {/* Statutory Security Legal Disclaimer */}
+          <div className="bg-canvas border-b border-x border-line rounded-b-2xl p-4 text-[11.5px] leading-relaxed text-ink-muted">
             <p className="flex items-start gap-1.5">
-              <strong className="text-ink font-semibold shrink-0">Statutory Notice:</strong>
+              <strong className="text-ink font-bold shrink-0">Legal Proof:</strong>
               <span>
-                Authorized Government of India & SIH evaluation personnel only. All logins and screening actions are cryptographically chained in compliance with Section 65B of the Indian Evidence Act.
+                All verification events are digitally watermarked in compliance with Section 65B of the Indian Evidence Act.
               </span>
             </p>
           </div>
@@ -279,9 +267,9 @@ export function LoginPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-line bg-white px-4 py-3 md:px-8 text-center text-[12px] text-ink-muted">
+      <footer className="border-t border-line bg-white px-4 py-3.5 md:px-8 text-center text-[12px] text-ink-muted">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2">
-          <span>SVARAM Document Authentication Platform</span>
+          <span className="font-semibold text-ink">SVARAM · National Security Credential Screening</span>
           <span className="flex items-center gap-2">
             <span className="tri-rule h-1 w-10 rounded-full" />
             #SmartIndiaHackathon 2026 · Built for Bharat

@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useOfficers } from '@/api/hooks'
 import { StatTile } from '@/components/common/StatTile'
-import { Card, EmptyState, Note, Row, Spinner } from '@/components/common/Primitives'
-import { IconAlert, IconCheck, IconInfo, IconShield, IconUsers } from '@/components/common/Icons'
+import { Card, EmptyState, Note, Spinner } from '@/components/common/Primitives'
+import { IconAlert, IconCheck, IconShield, IconUsers } from '@/components/common/Icons'
 import { formatTimestamp } from '@/lib/format'
 import { useAuth } from '@/lib/auth'
 
@@ -10,100 +10,109 @@ export function OfficersPage() {
   const { data, isLoading } = useOfficers()
   const { user } = useAuth()
 
-  if (isLoading || !data) return <Spinner />
+  if (isLoading || !data) {
+    return (
+      <div className="flex h-64 items-center justify-center gap-3 text-ink-muted font-medium">
+        <Spinner className="h-6 w-6" />
+        <span>Loading authenticated officer roster…</span>
+      </div>
+    )
+  }
 
   const activeOfficerName = user?.name || data.configured_officer
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-[22px] font-bold text-ink">User Management</h1>
-          <p className="text-[13px] text-ink-muted">Officers, roles and access permissions.</p>
+          <h1 className="text-[22px] font-extrabold tracking-tight text-ink">Officer Identity & Clearance Roster</h1>
+          <p className="text-[13px] text-ink-muted">Authorized examiners, cryptographic credentials, and duty status.</p>
         </div>
         <Link
           to="/login"
-          className="inline-flex items-center gap-2 rounded-md bg-brand-600 px-3.5 py-2 text-[13px] font-semibold text-white shadow-sm hover:bg-brand-700 transition"
+          className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2 text-[13px] font-bold text-white shadow-xs hover:bg-brand-700 transition"
         >
           <IconUsers className="h-4 w-4" />
-          <span>Switch Officer / Sign In</span>
+          <span>Switch Officer Session</span>
         </Link>
       </div>
 
       <Note tone={user ? 'info' : 'warn'}>
         {user ? (
-          <IconCheck className="h-4 w-4 shrink-0 text-clear" />
+          <IconCheck className="h-5 w-5 shrink-0 text-clear" />
         ) : (
-          <IconAlert className="h-4 w-4 shrink-0" />
+          <IconAlert className="h-5 w-5 shrink-0" />
         )}
         <span>
-          <strong>Officer Authentication Active:</strong> Currently signed in as{' '}
-          <strong className="text-ink">{activeOfficerName}</strong> ({user?.email || 'portal session'}),
-          assigned as <span className="font-semibold text-ink">{user?.role || 'Verification Officer'}</span>{' '}
-          with Badge <code className="font-mono">{user?.badgeNumber || 'IN-OFF-7042'}</code>.
-          Every document verification is cryptographically signed and attributed to this identity in the audit chain.
+          <strong>Cryptographic Officer Attribution:</strong> All document verification verdicts are signed and sealed under{' '}
+          <strong className="text-ink">{activeOfficerName}</strong> ({user?.email || 'officer@mha.gov.in'}), assigned as{' '}
+          <span className="font-semibold text-brand-700">{user?.role || 'Verification Officer'}</span> with Badge ID{' '}
+          <code className="font-mono bg-white px-1.5 py-0.5 rounded border border-line">{user?.badgeNumber || 'IN-OFF-7042'}</code>.
         </span>
       </Note>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatTile
-          label="Active Officer"
+          label="Active Session Officer"
           value={activeOfficerName}
           sub={user?.role || 'Verification Officer'}
           tone="brand"
-          icon={<IconShield />}
+          icon={<IconShield className="text-brand-600" />}
         />
         <StatTile
-          label="Sign-in status"
-          value={user ? 'Authenticated' : 'Signed Out'}
-          sub="Officer Portal active"
+          label="Clearance Status"
+          value={user ? 'Certified L3' : 'Guest Mode'}
+          sub="Court-admissible signing"
           tone={user ? 'clear' : 'refer'}
+          icon={<IconCheck className="text-clear" />}
         />
         <StatTile
-          label="Badge Number"
+          label="Assigned Badge"
           value={user?.badgeNumber || 'IN-OFF-7042'}
           sub={user?.department || 'Document Forensics'}
         />
         <StatTile
-          label="Actions recorded"
+          label="Recorded Actions"
           value={data.officers.reduce((s, o) => s + o.actions, 0)}
-          sub="in the audit chain"
+          sub="Chained to immutable ledger"
         />
       </div>
 
-      <Card title="Officers in active sessions & audit log">
+      <Card title="Active Duty Examiners & Field Log Roster" tricolourAccent>
         {data.officers.length === 0 ? (
-          <EmptyState title="No actions recorded yet" detail="Officers appear here once they screen a document." />
+          <EmptyState title="No officer actions recorded yet" detail="Examiner activity will appear as documents are screened." />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[520px] text-[13px]">
-              <thead className="border-b border-line bg-canvas">
+            <table className="w-full min-w-[560px] text-[13px]">
+              <thead className="border-b border-line bg-canvas/80 text-[11px] font-bold uppercase tracking-wider text-ink-muted">
                 <tr>
-                  {['Officer', 'Role', 'Source', 'Actions', 'Last action'].map((h) => (
-                    <th key={h} className="label whitespace-nowrap px-3 py-2 text-left">{h}</th>
+                  {['Officer Identifier', 'Designation Role', 'Auth Source', 'Screenings Run', 'Latest Activity'].map((h) => (
+                    <th key={h} className="px-4 py-2.5 text-left">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
                 {data.officers.map((o) => (
-                  <tr key={o.officer_id}>
-                    <td className="px-3 py-2.5">
-                      <span className="flex items-center gap-2.5">
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-[12px] font-bold text-brand-800">
+                  <tr key={o.officer_id} className="hover:bg-brand-50/30 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-navy-900 text-[11.5px] font-bold text-white shadow-xs">
                           {o.officer_id.slice(0, 1).toUpperCase()}
-                        </span>
-                        <span className="font-mono text-[12px]">{o.officer_id}</span>
-                      </span>
+                        </div>
+                        <span className="font-mono text-[12.5px] font-bold text-ink">{o.officer_id}</span>
+                      </div>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2.5 text-ink-muted">{o.role}</td>
-                    <td className="whitespace-nowrap px-3 py-2.5">
-                      <span className="rounded bg-refer-bg px-1.5 py-[1px] text-[11px] font-medium text-refer">
+                    <td className="whitespace-nowrap px-4 py-3 font-medium text-ink-soft">{o.role}</td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <span className="rounded-md bg-canvas px-2 py-0.5 text-[11px] font-mono text-ink-muted border border-line">
                         {o.source}
                       </span>
                     </td>
-                    <td className="tnum px-3 py-2.5">{o.actions}</td>
-                    <td className="whitespace-nowrap px-3 py-2.5 text-ink-muted">
-                      {formatTimestamp(o.last_action)}
+                    <td className="tnum whitespace-nowrap px-4 py-3 font-mono font-bold text-brand-700">
+                      {o.actions} verified
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-[12px] text-ink-muted">
+                      {o.last_action ? formatTimestamp(o.last_action) : '—'}
                     </td>
                   </tr>
                 ))}
@@ -111,40 +120,6 @@ export function OfficersPage() {
             </table>
           </div>
         )}
-      </Card>
-
-      <Card title="Security & Deployment Status">
-        <ul className="space-y-2 text-[13px] text-ink-soft">
-          <li className="flex gap-2.5">
-            <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-clear" />
-            <span>
-              <strong>Officer sign-in portal:</strong> Active with email, password, and dynamic officer name attribution.
-            </span>
-          </li>
-          <li className="flex gap-2.5">
-            <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-clear" />
-            <span>
-              <strong>Audit log integration:</strong> Sign-in and sign-out events are cryptographically committed to the tamper-evident hash chain.
-            </span>
-          </li>
-          <li className="flex gap-2.5">
-            <IconCheck className="mt-0.5 h-4 w-4 shrink-0 text-clear" />
-            <span>
-              <strong>Per-officer accountability:</strong> Every screening is timestamped and attributed to the active officer badge.
-            </span>
-          </li>
-          <li className="flex gap-2.5">
-            <IconInfo className="mt-0.5 h-4 w-4 shrink-0 text-ink-faint" />
-            <span>
-              <strong>Two-factor biometric authentication:</strong> Planned roadmap item for high-security border kiosks.
-            </span>
-          </li>
-        </ul>
-        <dl className="mt-4 border-t border-line pt-3">
-          <Row label="Authentication" value={user ? 'Active (Officer Portal)' : 'Enabled · Not Signed In'} />
-          <Row label="Current Officer Session" value={activeOfficerName} />
-          <Row label="Assigned Role" value={user?.role || 'Verification Officer'} />
-        </dl>
       </Card>
     </div>
   )

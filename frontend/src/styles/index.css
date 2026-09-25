@@ -105,7 +105,7 @@
 
   /* Keyboard shortcut hint badge */
   .kbd-key {
-    @apply inline-flex items-center justify-center rounded border border-line-strong/80 bg-canvas px-1.5 py-0.5 font-mono text-[10px] font-semibold text-ink-soft shadow-xs;
+    @apply inline-flex items-center justify-center rounded border border-line-strong/80 bg-canvas px-1.5 py-0.5 font-mono text-[10px] font-semibold text-ink-soft shadow-sm;
   }
 }
 
