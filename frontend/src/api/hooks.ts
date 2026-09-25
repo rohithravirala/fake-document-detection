@@ -191,3 +191,50 @@ export function groupByVerdict(cases: CaseSummary[]) {
     return totals
   }, {})
 }
+
+export interface CaseMetrics {
+  total: number
+  clear: number
+  reject: number
+  refer: number
+  processing: number
+  clearRatePercent: number
+  highRiskCount: number
+}
+
+/** Compute real-time dashboard analytics from case summaries */
+export function calculateCaseMetrics(cases: CaseSummary[]): CaseMetrics {
+  const total = cases.length
+  let clear = 0
+  let reject = 0
+  let refer = 0
+  let processing = 0
+  let highRiskCount = 0
+
+  for (const c of cases) {
+    if (c.verdict === 'CLEAR') clear++
+    else if (c.verdict === 'REJECT') {
+      reject++
+      highRiskCount++
+    } else if (c.verdict === 'REFER') {
+      refer++
+      highRiskCount++
+    } else {
+      processing++
+    }
+  }
+
+  const decided = clear + reject + refer
+  const clearRatePercent = decided > 0 ? Math.round((clear / decided) * 100) : 0
+
+  return {
+    total,
+    clear,
+    reject,
+    refer,
+    processing,
+    clearRatePercent,
+    highRiskCount,
+  }
+}
+

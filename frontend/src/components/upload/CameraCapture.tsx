@@ -1,13 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/common/Primitives'
+import { IconCamera } from '@/components/common/Icons'
 
-/**
- * Capture a document straight from the device camera.
- *
- * `getUserMedia` needs a secure context, so this is unavailable over plain HTTP
- * on anything but localhost. That is said out loud rather than leaving a button
- * that silently does nothing at a demonstration.
- */
 export function CameraCapture({ onCapture }: { onCapture: (file: File) => void }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -40,8 +34,8 @@ export function CameraCapture({ onCapture }: { onCapture: (file: File) => void }
     } catch (cause) {
       setError(
         cause instanceof Error && cause.name === 'NotAllowedError'
-          ? 'Camera access was declined.'
-          : 'The camera could not be opened on this device.',
+          ? 'Camera permission denied. Please allow camera access in browser settings.'
+          : 'Unable to initialize device camera feed.',
       )
     }
   }
@@ -62,8 +56,8 @@ export function CameraCapture({ onCapture }: { onCapture: (file: File) => void }
 
   if (!supported) {
     return (
-      <p className="text-sm text-ink-muted">
-        Camera capture needs a secure connection (HTTPS or localhost). Upload a file instead.
+      <p className="text-xs text-ink-muted">
+        Live camera scanner requires a secure context (HTTPS or localhost).
       </p>
     )
   }
@@ -71,26 +65,49 @@ export function CameraCapture({ onCapture }: { onCapture: (file: File) => void }
   return (
     <div className="space-y-3">
       {active ? (
-        <>
+        <div className="relative overflow-hidden rounded-2xl border-2 border-brand-500 bg-black shadow-panel">
           <video
             ref={videoRef}
             playsInline
             muted
-            className="w-full rounded-lg border border-gray-200 bg-black"
+            className="w-full max-h-[380px] object-cover"
           />
-          <div className="flex gap-2">
-            <Button onClick={capture}>Capture</Button>
-            <Button variant="secondary" onClick={stop}>
+
+          {/* Viewfinder Target Overlay */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+            <div className="relative h-[80%] w-[90%] rounded-xl border-2 border-white/80 shadow-[0_0_0_9999px_rgba(0,0,0,0.45)]">
+              {/* Corner brackets */}
+              <div className="absolute -top-1 -left-1 h-5 w-5 border-t-4 border-l-4 border-amber-400" />
+              <div className="absolute -top-1 -right-1 h-5 w-5 border-t-4 border-r-4 border-amber-400" />
+              <div className="absolute -bottom-1 -left-1 h-5 w-5 border-b-4 border-l-4 border-amber-400" />
+              <div className="absolute -bottom-1 -right-1 h-5 w-5 border-b-4 border-r-4 border-amber-400" />
+              <span className="absolute top-2 left-3 font-mono text-[11px] font-bold uppercase tracking-wider text-amber-300 drop-shadow">
+                ALIGN DOCUMENT BOUNDS
+              </span>
+            </div>
+          </div>
+
+          <div className="absolute bottom-4 inset-x-0 flex items-center justify-center gap-3 z-10">
+            <Button variant="primary" size="md" onClick={capture} className="shadow-lg px-6">
+              📸 Snapshot
+            </Button>
+            <Button variant="secondary" size="md" onClick={stop} className="bg-white/90">
               Cancel
             </Button>
           </div>
-        </>
+        </div>
       ) : (
-        <Button variant="secondary" onClick={start}>
-          Use camera
+        <Button variant="secondary" size="sm" onClick={start} className="gap-2">
+          <IconCamera className="h-4 w-4" />
+          <span>Live Camera Scan</span>
         </Button>
       )}
-      {error ? <p className="text-sm text-reject-fg">{error}</p> : null}
+
+      {error ? (
+        <p className="rounded-lg bg-reject-bg border border-reject-border p-2 text-xs font-semibold text-reject-dark">
+          {error}
+        </p>
+      ) : null}
     </div>
   )
 }

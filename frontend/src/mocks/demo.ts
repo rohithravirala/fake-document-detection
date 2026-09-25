@@ -72,6 +72,16 @@ export const DEMO_CASES: DemoCase[] = [
     ],
   },
   {
+    label: 'Voter ID · EPIC syntax check',
+    expectation: 'CLEAR — 3-letter constituency prefix and 7-digit sequential serial match',
+    documents: [{ doc_type: 'voter_id', fields: { epic_number: 'ABC1234567', name: 'PRIYA SHARMA' } }],
+  },
+  {
+    label: 'Driving Licence · State format',
+    expectation: 'CLEAR — State code DL, valid 4-digit issue year and 7-digit DL number',
+    documents: [{ doc_type: 'driving_licence', fields: { dl_number: 'DL-0420110012345', name: 'AMIT VERMA' } }],
+  },
+  {
     label: 'No source of truth',
     expectation: 'REFER — nothing here can be verified, so it cannot be cleared',
     documents: [{ doc_type: 'unknown', fields: { name: 'SOMEONE' } }],

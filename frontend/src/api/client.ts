@@ -46,7 +46,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       if (session?.token) {
         headers['Authorization'] = `Bearer ${session.token}`
       }
+      if (session?.badgeNumber) {
+        headers['X-Officer-Badge'] = session.badgeNumber
+      }
+      if (session?.stationCode) {
+        headers['X-Officer-Station'] = session.stationCode
+      }
     }
+    headers['X-Request-Timestamp'] = new Date().toISOString()
   } catch {
     // ignore parsing failure
   }

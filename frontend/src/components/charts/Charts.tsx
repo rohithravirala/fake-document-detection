@@ -4,7 +4,6 @@
  */
 
 import { useState } from 'react'
-import { cn } from '@/lib/utils'
 
 const SERIES = {
   clear: '#12854F',

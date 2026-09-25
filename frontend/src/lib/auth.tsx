@@ -10,6 +10,8 @@ export interface OfficerUser {
   token: string
   loginTime: string
   department?: string
+  stationCode?: string
+  clearanceLevel?: string
 }
 
 export const PRESET_OFFICERS: Array<{
@@ -18,6 +20,8 @@ export const PRESET_OFFICERS: Array<{
   role: string
   badgeNumber: string
   dept: string
+  station: string
+  clearance: string
 }> = [
   {
     name: 'Ramu Gaddam',
@@ -25,6 +29,8 @@ export const PRESET_OFFICERS: Array<{
     role: 'Senior Verification Officer',
     badgeNumber: 'IN-RAM-7042',
     dept: 'Border Control & Document Forensics',
+    station: 'IN-DEL-IGI-T3',
+    clearance: 'LEVEL 3 (SENIOR)',
   },
   {
     name: 'Rohith Ravirala',
@@ -32,6 +38,8 @@ export const PRESET_OFFICERS: Array<{
     role: 'Lead System Administrator',
     badgeNumber: 'IN-ROH-1001',
     dept: 'Identity Systems & Integrity Division',
+    station: 'IN-HYD-HQ-01',
+    clearance: 'LEVEL 3 (ADMIN)',
   },
   {
     name: 'Akshay Nedunuri',
@@ -39,6 +47,8 @@ export const PRESET_OFFICERS: Array<{
     role: 'Forensic Document Examiner',
     badgeNumber: 'IN-AKS-3210',
     dept: 'Physical & Digital Tamper Analysis',
+    station: 'IN-BOM-FSL-04',
+    clearance: 'LEVEL 2 (EXAMINER)',
   },
   {
     name: 'Kadiyam Tejesh',
@@ -46,6 +56,8 @@ export const PRESET_OFFICERS: Array<{
     role: 'Supervisory Inspector',
     badgeNumber: 'IN-TEJ-8954',
     dept: 'Immigration & Intelligence Bureau',
+    station: 'IN-BLR-PORT-02',
+    clearance: 'LEVEL 2 (SUPERVISOR)',
   },
 ]
 
@@ -59,6 +71,8 @@ interface AuthContextType {
     password: string
     role?: string
     badgeNumber?: string
+    stationCode?: string
+    clearanceLevel?: string
   }) => Promise<void>
   logout: () => Promise<void>
   switchPresetOfficer: (index: number) => Promise<void>
@@ -78,7 +92,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Fallback
     }
-    // Default initial demonstration officer
     const defaultOfficer = PRESET_OFFICERS[0]
     return {
       id: 'off_ramu7042',
@@ -89,6 +102,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       token: 'svaram_tok_demo_active',
       loginTime: new Date().toISOString(),
       department: defaultOfficer.dept,
+      stationCode: defaultOfficer.station,
+      clearanceLevel: defaultOfficer.clearance,
     }
   })
 
@@ -99,7 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
       } catch {
-        // LocalStorage quota or access error
+        // Ignore quota error
       }
     } else {
       localStorage.removeItem(STORAGE_KEY)
@@ -112,6 +127,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string
     role?: string
     badgeNumber?: string
+    stationCode?: string
+    clearanceLevel?: string
   }) => {
     setIsLoading(true)
     const nameClean = credentials.name.trim()
@@ -119,7 +136,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const roleClean = credentials.role || 'Verification Officer'
 
     try {
-      // Try to communicate with backend auth endpoint
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -143,17 +159,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           token: data.user.token,
           loginTime: data.user.login_time,
           department: data.user.department,
+          stationCode: credentials.stationCode || 'IN-HQ-MAIN',
+          clearanceLevel: credentials.clearanceLevel || 'LEVEL 3',
         }
         setUser(newUser)
         return
       }
     } catch {
-      // If backend network fails, proceed with client-verified fallback session
+      // Client-verified session fallback
     } finally {
       setIsLoading(false)
     }
 
-    // Client-side authentication fallback for offline/demo mode
     const initials = nameClean.replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase() || 'OFF'
     const fallbackUser: OfficerUser = {
       id: `off_${Date.now()}`,
@@ -164,6 +181,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       token: `svaram_tok_${Math.random().toString(36).substring(2)}`,
       loginTime: new Date().toISOString(),
       department: 'Immigration & Document Fraud Prevention',
+      stationCode: credentials.stationCode || 'IN-DEL-IGI-T3',
+      clearanceLevel: credentials.clearanceLevel || 'LEVEL 3',
     }
     setUser(fallbackUser)
   }
@@ -176,6 +195,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password: 'presetDemoPassword2026',
       role: preset.role,
       badgeNumber: preset.badgeNumber,
+      stationCode: preset.station,
+      clearanceLevel: preset.clearance,
     })
   }
 
@@ -187,7 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           headers: { Authorization: `Bearer ${user.token}` },
         })
       } catch {
-        // Ignore network errors on logout
+        // Ignore network errors
       }
     }
     setUser(null)
