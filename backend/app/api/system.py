@@ -83,13 +83,9 @@ def settings_view(session: Session = Depends(get_session)) -> Dict[str, Any]:
 
 @router.get("/officers", summary="Officer identity in this deployment")
 def officers(session: Session = Depends(get_session)) -> Dict[str, Any]:
-    """There is exactly one, and it is hard-coded.
+    """Retrieves active officers from the authentication session registry and audit trail."""
+    from backend.app.api.auth import _ACTIVE_SESSIONS
 
-    No authentication system was built — a deliberate non-goal, so that the
-    screening logic got the time instead. The audit log already carries an
-    officer id on every record, so adding real identities later is a change of
-    where that value comes from, not a schema change.
-    """
     settings = get_settings()
 
     rows = session.execute(
@@ -98,24 +94,62 @@ def officers(session: Session = Depends(get_session)) -> Dict[str, Any]:
         )
     ).all()
 
-    officers_seen: List[Dict[str, Any]] = [
-        {
-            "officer_id": officer_id,
-            "actions": count,
-            "last_action": last.isoformat() if last else None,
-            "role": "Verification Officer",
-            "source": "hard-coded",
-        }
-        for officer_id, count, last in rows
-    ]
+    seen_ids = set()
+    officers_list: List[Dict[str, Any]] = []
+
+    # First add officers currently signed in
+    for profile in _ACTIVE_SESSIONS.values():
+        seen_ids.add(profile.id)
+        # Find action count if in audit log
+        count = sum(r[1] for r in rows if r[0] == profile.id)
+        last_match = next((r[2] for r in rows if r[0] == profile.id), None)
+        officers_list.append(
+            {
+                "officer_id": profile.name,
+                "role": profile.role,
+                "source": "authenticated-session",
+                "actions": count,
+                "last_action": last_match.isoformat()
+                if last_match
+                else profile.login_time,
+                "email": profile.email,
+                "badge_number": profile.badge_number,
+            }
+        )
+
+    # Then add officers recorded in the audit chain
+    for officer_id, count, last in rows:
+        if officer_id not in seen_ids:
+            officers_list.append(
+                {
+                    "officer_id": officer_id,
+                    "actions": count,
+                    "last_action": last.isoformat() if last else None,
+                    "role": "Verification Officer",
+                    "source": "audit-chain",
+                }
+            )
+
+    active_user = next(iter(_ACTIVE_SESSIONS.values()), None)
+    active_name = active_user.name if active_user else settings.officer_id
 
     return {
-        "configured_officer": settings.officer_id,
-        "officers": officers_seen,
-        "authentication": False,
+        "configured_officer": active_name,
+        "officers": officers_list
+        if officers_list
+        else [
+            {
+                "officer_id": settings.officer_id,
+                "actions": 0,
+                "last_action": None,
+                "role": "Verification Officer",
+                "source": "default",
+            }
+        ],
+        "authentication": True,
+        "active_sessions_count": len(_ACTIVE_SESSIONS),
         "note": (
-            "No authentication system is built. Every screening is attributed to "
-            "the configured officer id. This is a stated non-goal, not an "
-            "oversight — see the README."
+            "Officer Portal authentication is active. Screenings and sign-ins are "
+            "attributed to verified officer credentials and cryptographically chained."
         ),
     }

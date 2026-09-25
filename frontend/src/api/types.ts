@@ -315,3 +315,12 @@ export interface Officers {
   authentication: boolean
   note: string
 }
+
+export interface VerificationPreset {
+  id: string
+  title: string
+  docType: DocType
+  description: string
+  expectedVerdict: Verdict
+}
+

@@ -27,10 +27,6 @@ export const CHECK_TYPE_LABEL: Record<CheckType, string> = {
 
 /**
  * How much weight a check's evidence carries.
- *
- * Shown in the interface because it is the difference between "the issuing
- * authority's signature verified" and "this region looks unusual", and an
- * officer acting on the result needs to know which they are reading.
  */
 export const CHECK_TYPE_WEIGHT: Record<CheckType, string> = {
   cryptographic: 'Decisive — verified against the issuing authority',
@@ -90,4 +86,21 @@ export function fieldLabel(name: string): string {
     .replace(/\bMrz\b/, 'MRZ')
     .replace(/\bPan\b/, 'PAN')
     .replace(/\bDob\b/, 'Date of Birth')
+}
+
+export function maskAadhaar(num: string): string {
+  const clean = num.replace(/\D/g, '')
+  if (clean.length === 12) {
+    return `XXXX-XXXX-${clean.slice(8)}`
+  }
+  return num
+}
+
+export function truncateHash(hash: string, len = 16): string {
+  if (!hash || hash.length <= len) return hash
+  return `${hash.slice(0, len)}…`
+}
+
+export function formatPercentage(val: number, decimals = 1): string {
+  return `${(val * 100).toFixed(decimals)}%`
 }

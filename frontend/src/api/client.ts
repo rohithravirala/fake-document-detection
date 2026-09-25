@@ -36,9 +36,34 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers: Record<string, string> =
+    init?.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }
+
+  try {
+    const stored = localStorage.getItem('svaram_officer_session')
+    if (stored) {
+      const session = JSON.parse(stored)
+      if (session?.token) {
+        headers['Authorization'] = `Bearer ${session.token}`
+      }
+      if (session?.badgeNumber) {
+        headers['X-Officer-Badge'] = session.badgeNumber
+      }
+      if (session?.stationCode) {
+        headers['X-Officer-Station'] = session.stationCode
+      }
+    }
+    headers['X-Request-Timestamp'] = new Date().toISOString()
+  } catch {
+    // ignore parsing failure
+  }
+
   const response = await fetch(`${BASE}${path}`, {
-    headers: init?.body instanceof FormData ? undefined : { 'Content-Type': 'application/json' },
     ...init,
+    headers: {
+      ...headers,
+      ...(init?.headers as Record<string, string> | undefined),
+    },
   })
 
   if (!response.ok) {
@@ -120,4 +145,18 @@ export const api = {
 
   settings: () => request<SystemSettings>('/settings'),
   officers: () => request<Officers>('/officers'),
+
+  login: (credentials: {
+    name: string
+    email: string
+    password: string
+    role?: string
+    badge_number?: string
+  }) =>
+    request<{ authenticated: boolean; user: any; message: string }>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    }),
+  logout: () => request<{ status: string; message: string }>('/auth/logout', { method: 'POST' }),
+  me: () => request<{ authenticated: boolean; user?: any }>('/auth/me'),
 }

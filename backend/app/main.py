@@ -21,6 +21,7 @@ from starlette.requests import Request
 from backend.app.api import (
     analytics,
     audit,
+    auth,
     cases,
     faces,
     health,
@@ -93,6 +94,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(health.router, prefix="/api")
+    app.include_router(auth.router, prefix="/api")
     app.include_router(cases.router, prefix="/api")
     app.include_router(stream.router, prefix="/api")
     app.include_router(profiles.router, prefix="/api")

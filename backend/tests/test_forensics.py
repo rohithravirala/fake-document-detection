@@ -200,7 +200,12 @@ def test_verifier_clean_image(tmp_path):
 
 def test_metadata_detects_editors(tmp_path):
     """Saving with editor signatures triggers metadata_editor signal."""
-    for editor_name in ["Adobe Photoshop 2024", "Canva Desktop", "Photopea Web App", "GIMP 2.10"]:
+    for editor_name in [
+        "Adobe Photoshop 2024",
+        "Canva Desktop",
+        "Photopea Web App",
+        "GIMP 2.10",
+    ]:
         img_path = tmp_path / f"edited_{editor_name.split()[0]}.jpg"
         img = Image.new("RGB", (100, 100), color="white")
         exif = img.getexif()
@@ -280,7 +285,9 @@ def test_aggregate_tampering_risk_clean():
 
 
 def test_aggregate_tampering_risk_low():
-    weak_signal = Signal(kind="metadata_modified", strength=0.35, note="Timestamp shifted")
+    weak_signal = Signal(
+        kind="metadata_modified", strength=0.35, note="Timestamp shifted"
+    )
     summary = aggregate_tampering_risk([weak_signal])
     assert summary.risk_level == "low_risk"
     assert summary.max_strength == 0.35

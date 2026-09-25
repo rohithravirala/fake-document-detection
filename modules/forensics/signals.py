@@ -126,4 +126,3 @@ def aggregate_tampering_risk(signals: List[Signal]) -> TamperRiskSummary:
         signals=signals,
         recommendation=rec,
     )
-
